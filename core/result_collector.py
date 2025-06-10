@@ -16,6 +16,41 @@ from .models import TaskPlan, ExecutionResult
 # 配置日志
 logger = logging.getLogger(__name__)
 
+def ensure_json_serializable(obj: Any) -> Any:
+    """
+    确保对象可以被JSON序列化
+    
+    Args:
+        obj: 任意对象
+        
+    Returns:
+        Any: 可序列化的对象
+    """
+    try:
+        # 测试是否可以序列化
+        json.dumps(obj)
+        return obj
+    except (TypeError, ValueError):
+        # 如果不能序列化，进行转换
+        if isinstance(obj, dict):
+            return {k: ensure_json_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [ensure_json_serializable(item) for item in obj]
+        elif isinstance(obj, tuple):
+            return [ensure_json_serializable(item) for item in obj]
+        elif hasattr(obj, 'to_dict'):
+            try:
+                return ensure_json_serializable(obj.to_dict())
+            except Exception:
+                return str(obj)
+        elif hasattr(obj, '__dict__'):
+            try:
+                return {k: ensure_json_serializable(v) for k, v in obj.__dict__.items()}
+            except Exception:
+                return str(obj)
+        else:
+            return str(obj)
+
 class ResultReport:
     """结果报告类"""
     
@@ -26,7 +61,8 @@ class ResultReport:
     
     def to_dict(self) -> Dict[str, Any]:
         """转换为字典格式"""
-        return {
+        # 基础报告数据
+        report_data = {
             "task_info": {
                 "task_id": self.task_plan.task_id,
                 "user_input": self.task_plan.user_input,
@@ -38,8 +74,8 @@ class ResultReport:
                 "success": self.execution_result.success,
                 "execution_time": self.execution_result.execution_time,
                 "total_steps": len(self.execution_result.results),
-                "successful_steps": len([r for r in self.execution_result.results if r["status"] == "completed"]),
-                "failed_steps": len([r for r in self.execution_result.results if r["status"] == "failed"]),
+                "successful_steps": len([r for r in self.execution_result.results if r.get("status") == "completed"]),
+                "failed_steps": len([r for r in self.execution_result.results if r.get("status") == "failed"]),
                 "files_generated": self.execution_result.files_generated,
                 "error_message": self.execution_result.error_message
             },
@@ -49,6 +85,38 @@ class ResultReport:
                 "report_version": "1.0"
             }
         }
+        
+        # 确保所有数据都可以被JSON序列化
+        try:
+            serializable_data = ensure_json_serializable(report_data)
+            return serializable_data
+        except Exception as e:
+            logger.error(f"序列化报告数据时出错: {e}")
+            # 如果序列化失败，返回一个基础的安全版本
+            return {
+                "task_info": {
+                    "task_id": str(self.task_plan.task_id),
+                    "user_input": str(self.task_plan.user_input),
+                    "task_type": str(self.task_plan.task_type),
+                    "complexity_level": str(self.task_plan.complexity_level),
+                    "status": str(self.task_plan.status.value)
+                },
+                "execution_summary": {
+                    "success": bool(self.execution_result.success),
+                    "execution_time": float(self.execution_result.execution_time),
+                    "total_steps": len(self.execution_result.results),
+                    "successful_steps": 0,
+                    "failed_steps": 0,
+                    "files_generated": [str(f) for f in self.execution_result.files_generated],
+                    "error_message": str(self.execution_result.error_message) if self.execution_result.error_message else None
+                },
+                "step_details": [str(result) for result in self.execution_result.results],
+                "metadata": {
+                    "generated_at": self.generated_at.isoformat(),
+                    "report_version": "1.0",
+                    "serialization_error": str(e)
+                }
+            }
 
 class ResultCollector:
     """结果收集器 - 负责收集、格式化和存储执行结果"""

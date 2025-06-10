@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class FileManager:
     """文件管理器 - 负责任务文件的收集、管理和打包"""
     
-    def __init__(self, base_dir: str = "D:\\Dev\\合作项目\\05.数字员工\\task_files"):
+    def __init__(self, base_dir: str = "./task_files"):
         """
         初始化文件管理器
         

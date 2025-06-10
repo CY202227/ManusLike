@@ -97,9 +97,12 @@ class TaskExecutor:
                 await self.event_emitter.emit_step_complete(step, step_result)
                 
                 # 从步骤结果中提取和注册文件（现在文件应该已经在正确位置）
+                logger.info(f"🔍 开始提取文件，步骤结果类型: {type(step_result)}")
+                logger.info(f"🔍 步骤结果内容: {str(step_result)[:200]}...")
                 step_files = self._extract_and_register_files(
                     task_plan.task_id, step_result, step.function_name, step.step_id, step.step_description
                 )
+                logger.info(f"🔍 提取到的文件: {step_files}")
                 files_generated.extend(step_files)
 
                 # 如果步骤失败且不是最后一步，考虑是否继续
@@ -193,7 +196,9 @@ class TaskExecutor:
                 }
             else:
                 # 使用ToolManager统一调用工具
-                result = await self.tool_manager.call_tool(step.function_name, step.args)
+                raw_result = await self.tool_manager.call_tool(step.function_name, step.args)
+                # 序列化结果以确保可处理
+                result = self.tool_manager._ensure_serializable_result(raw_result)
             
             # 计算耗时
             call_duration = time.time() - call_start_time
@@ -263,17 +268,56 @@ class TaskExecutor:
         extracted_files = []
         
         try:
+            logger.info(f"📋 文件提取 - 结果类型: {type(result)}, 函数: {function_name}")
+            
             # 处理字典格式的结果
             if isinstance(result, dict):
+                logger.info(f"📋 字典结果键: {list(result.keys())}")
+                
+                # 检查是否有直接的file_path
                 if "file_path" in result and result.get("success", True):
                     file_path = result["file_path"]
                     file_type = result.get("file_type", "unknown")
+                    logger.info(f"📋 找到直接文件路径: {file_path}")
                     
                     # 智能文件路径处理和注册
                     registered_path = self._smart_file_registration(task_id, file_path, file_type, step_id, description)
                     if registered_path:
+                        logger.info(f"📋 文件注册成功: {registered_path}")
                         extracted_files.append(registered_path)
+                    else:
+                        logger.warning(f"📋 文件注册失败: {file_path}")
                 
+                # 检查是否是MCP调用结果格式（有result字段）
+                elif "result" in result and result.get("success", True):
+                    logger.info(f"📋 检测到MCP结果格式，提取result字段")
+                    inner_result = result["result"]
+                    logger.info(f"📋 内部结果类型: {type(inner_result)}")
+                    
+                    # 如果inner_result仍然是CallToolResult对象，需要序列化
+                    if hasattr(inner_result, 'content'):
+                        logger.info(f"📋 内部结果是CallToolResult，进行序列化")
+                        serialized_result = self.tool_manager._ensure_serializable_result(inner_result)
+                        logger.info(f"📋 序列化后结果类型: {type(serialized_result)}")
+                        logger.info(f"📋 序列化后结果: {serialized_result}")
+                        inner_result = serialized_result
+                    
+                    # 如果inner_result是字典且包含file_path
+                    if isinstance(inner_result, dict) and "file_path" in inner_result:
+                        file_path = inner_result["file_path"]
+                        file_type = inner_result.get("file_type", "unknown")
+                        logger.info(f"📋 从MCP结果中找到文件路径: {file_path}")
+                        
+                        # 智能文件路径处理和注册
+                        registered_path = self._smart_file_registration(task_id, file_path, file_type, step_id, description)
+                        if registered_path:
+                            logger.info(f"📋 文件注册成功: {registered_path}")
+                            extracted_files.append(registered_path)
+                        else:
+                            logger.warning(f"📋 文件注册失败: {file_path}")
+                    else:
+                        logger.info(f"📋 MCP内部结果不是字典或无file_path: {inner_result}")
+                        
                 # 处理图表生成结果
                 elif result.get("type") == "chart" and result.get("success", False):
                     if "file_path" in result:
@@ -293,6 +337,8 @@ class TaskExecutor:
                         if isinstance(img_result, dict) and "url" in img_result:
                             # 这里可以扩展处理图片URL，下载并保存本地
                             logger.info(f"图片生成结果: {img_result['url']}")
+                else:
+                    logger.info(f"📋 字典中无file_path或success=False")
             
             # 处理列表格式的结果
             elif isinstance(result, list):
@@ -311,6 +357,8 @@ class TaskExecutor:
                     registered_path = self._smart_file_registration(task_id, result, "unknown", step_id, description)
                     if registered_path:
                         extracted_files.append(registered_path)
+            else:
+                logger.info(f"📋 非字典结果，跳过文件提取")
             
         except Exception as e:
             logger.error(f"提取文件时发生错误: {e}")
@@ -337,11 +385,16 @@ class TaskExecutor:
             if os.path.exists(file_path):
                 normalized_path = str(Path(file_path).resolve())
             else:
+                logger.info(f"文件不存在: {file_path}")
                 # 如果原路径不存在，尝试在项目目录下寻找
                 script_dir = os.path.dirname(os.path.abspath(__file__))
+                project_root = os.path.dirname(script_dir)  # 项目根目录
                 possible_paths = [
-                    os.path.join(script_dir, file_path),
+                    os.path.join(project_root, file_path),  # 基于项目根目录的路径
+                    os.path.join(script_dir, file_path),    # 基于core目录的路径（保持兼容）
+                    os.path.join(project_root, 'generated_files', os.path.basename(file_path)),
                     os.path.join(script_dir, 'generated_files', os.path.basename(file_path)),
+                    os.path.join(project_root, os.path.basename(file_path)),
                     os.path.join(script_dir, os.path.basename(file_path))
                 ]
                 

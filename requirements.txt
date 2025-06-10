@@ -1,10 +1,12 @@
 # 核心依赖
 openai
 pydantic
-asyncio-mqtt>
+asyncio-mqtt
 
 # MCP相关
 mcp
+langchain_mcp_adapters
+mcp_server_fetch
 
 # 数据处理
 pandas
@@ -26,6 +28,7 @@ plotly
 fastapi
 uvicorn
 websockets
+jinja2
 
 # HTTP请求
 requests

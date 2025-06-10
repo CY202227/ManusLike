@@ -126,38 +126,167 @@ class ToolManager:
                 args=args
             )
             
-            # 处理CallToolResult对象
-            if hasattr(result, 'content'):
-                if hasattr(result.content, 'text'):
-                    # 尝试解析JSON格式的返回值
-                    result_text = result.content.text
-                    try:
-                        # 如果是JSON格式，解析为字典返回
-                        parsed_result = json.loads(result_text)
-                        return parsed_result
-                    except (json.JSONDecodeError, ValueError):
-                        # 如果不是JSON格式，直接返回文本
-                        return result_text
-                elif isinstance(result.content, list) and len(result.content) > 0:
-                    content_item = result.content[0]
-                    if hasattr(content_item, 'text'):
-                        # 同样尝试解析JSON
-                        result_text = content_item.text
-                        try:
-                            parsed_result = json.loads(result_text)
-                            return parsed_result
-                        except (json.JSONDecodeError, ValueError):
-                            return result_text
-                    else:
-                        return str(content_item)
-                else:
-                    return str(result.content)
-            else:
-                return result
+            # 确保结果可序列化
+            final_result = self._ensure_serializable_result(result)
+            
+            # 检查返回结果是否包含错误信息
+            if self._is_error_result(final_result):
+                error_message = self._extract_error_message(final_result)
+                logger.error(f"工具返回错误结果: {tool_name} - {error_message}")
+                raise RuntimeError(f"工具执行失败: {error_message}")
+            
+            return final_result
                 
         except Exception as e:
             logger.error(f"工具调用失败: {tool_name} - {str(e)}")
             raise
+    
+    def _ensure_serializable_result(self, result: Any) -> Any:
+        """
+        确保结果可以被JSON序列化
+        
+        Args:
+            result: 原始结果
+            
+        Returns:
+            Any: 可序列化的结果
+        """
+        # 如果结果已经是基础类型或字典，直接返回
+        if isinstance(result, (dict, list, str, int, float, bool, type(None))):
+            return result
+        
+        # 处理CallToolResult对象
+        if hasattr(result, 'content'):
+            # 尝试提取content
+            content = result.content
+            
+            if hasattr(content, 'text'):
+                # 单个文本内容
+                result_text = content.text
+                return self._parse_text_result(result_text)
+                
+            elif isinstance(content, list) and len(content) > 0:
+                # 列表形式的内容
+                content_item = content[0]
+                if hasattr(content_item, 'text'):
+                    result_text = content_item.text
+                    return self._parse_text_result(result_text)
+                else:
+                    # 如果内容项不是文本，转换为字符串
+                    return str(content_item)
+            else:
+                # 其他类型的content，转换为字符串
+                return str(content)
+        
+        # 如果没有content属性，尝试其他常见属性
+        elif hasattr(result, 'text'):
+            return self._parse_text_result(result.text)
+        
+        elif hasattr(result, 'data'):
+            return result.data
+        
+        elif hasattr(result, 'value'):
+            return result.value
+        
+        # 如果对象有to_dict方法，使用它
+        elif hasattr(result, 'to_dict'):
+            try:
+                return result.to_dict()
+            except Exception:
+                pass
+        
+        # 如果对象有__dict__属性，尝试转换为字典
+        elif hasattr(result, '__dict__'):
+            try:
+                # 递归确保所有嵌套对象也可序列化
+                return self._clean_dict_for_serialization(result.__dict__)
+            except Exception:
+                pass
+        
+        # 最后的备选方案：转换为字符串
+        return str(result)
+    
+    def _parse_text_result(self, text: str) -> Any:
+        """
+        解析文本结果，尝试转换为JSON
+        
+        Args:
+            text: 文本内容
+            
+        Returns:
+            Any: 解析后的内容
+        """
+        if not text:
+            return ""
+            
+        try:
+            # 尝试解析为JSON
+            parsed_result = json.loads(text)
+            return parsed_result
+        except (json.JSONDecodeError, ValueError):
+            # 如果不是JSON格式，直接返回文本
+            return text
+    
+    def _clean_dict_for_serialization(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        清理字典中的不可序列化对象
+        
+        Args:
+            data: 原始字典
+            
+        Returns:
+            Dict[str, Any]: 清理后的字典
+        """
+        clean_data = {}
+        
+        for key, value in data.items():
+            try:
+                # 测试值是否可序列化
+                json.dumps(value)
+                clean_data[key] = value
+            except (TypeError, ValueError):
+                # 如果不可序列化，尝试转换
+                if isinstance(value, dict):
+                    clean_data[key] = self._clean_dict_for_serialization(value)
+                elif isinstance(value, list):
+                    clean_data[key] = [self._ensure_serializable_result(item) for item in value]
+                else:
+                    clean_data[key] = str(value)
+        
+        return clean_data
+    
+    def _is_error_result(self, result: Any) -> bool:
+        """检查结果是否为错误结果"""
+        if isinstance(result, dict):
+            # 检查字典中的错误标识
+            if result.get('error') or result.get('success') == False:
+                return True
+        elif isinstance(result, str):
+            # 检查字符串中的错误关键词
+            error_keywords = [
+                'Error executing tool',
+                'missing 1 required positional argument',
+                'Exception',
+                'Traceback',
+                'error:',
+                'Error:',
+                'failed',
+                'Failed'
+            ]
+            result_lower = result.lower()
+            for keyword in error_keywords:
+                if keyword.lower() in result_lower:
+                    return True
+        return False
+    
+    def _extract_error_message(self, result: Any) -> str:
+        """从结果中提取错误信息"""
+        if isinstance(result, dict):
+            return result.get('error', str(result))
+        elif isinstance(result, str):
+            return result
+        else:
+            return str(result)
     
     def get_tools_for_planning(self) -> List[Dict[str, Any]]:
         """获取用于任务规划的工具信息"""
