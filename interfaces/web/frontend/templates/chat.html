@@ -536,6 +536,73 @@
         .status-busy { background: #ffc107; }
         .status-offline { background: #6c757d; }
         
+        /* 流式日志样式 */
+        .log-entry {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin-bottom: 2px;
+            padding: 2px 4px;
+            border-radius: 3px;
+            transition: all 0.2s ease;
+        }
+        
+        .log-entry:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+        
+        .log-entry .badge {
+            font-size: 0.7rem;
+            padding: 1px 6px;
+            margin-right: 4px;
+            font-weight: 500;
+        }
+        
+        .log-entry .log-message {
+            word-break: break-word;
+            color: #495057;
+        }
+        
+        .log-entry.log-error .log-message {
+            color: #dc3545;
+            font-weight: 500;
+        }
+        
+        .log-entry.log-warning .log-message {
+            color: #e67e22;
+            font-weight: 500;
+        }
+        
+        .log-entry.log-info .log-message {
+            color: #3498db;
+        }
+        
+        .log-entry.log-debug .log-message {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        /* 日志级别颜色 */
+        .badge.text-info {
+            background-color: rgba(23, 162, 184, 0.1);
+            color: #17a2b8;
+        }
+        
+        .badge.text-warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #e67e22;
+        }
+        
+        .badge.text-danger {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+        
+        .badge.text-muted {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: #6c757d;
+        }
+        
         /* 文件样式 */
         .file-item {
             background: #f8f9fa;
@@ -808,17 +875,19 @@
                         </div>
                     </div>
                     
-                    <!-- 实时日志 -->
-                    <div class="p-3 flex-fill d-flex flex-column">
+                    <!-- 系统设置 -->
+                    <div class="p-3">
                         <h6 class="mb-2">
-                            <i class="bi bi-terminal"></i>
-                            实时日志
+                            <i class="bi bi-gear"></i>
+                            系统设置
                         </h6>
-                        <div class="monitor-log flex-fill" id="monitorLog">
-                            > Manus AI System 已启动<br>
-                            > WebSocket 连接建立中...<br>
-                            > 等待用户输入任务<br>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="debugModeSwitch" onchange="toggleDebugMode()">
+                            <label class="form-check-label" for="debugModeSwitch">
+                                显示详细日志
+                            </label>
                         </div>
+                        <small class="text-muted">开启后将在对话中显示系统详细运行日志</small>
                     </div>
                 </div>
             </div>
@@ -843,6 +912,12 @@
         // 初始化应用
         function initializeApp() {
             console.log('初始化Manus AI系统...');
+            
+            // 初始化调试模式
+            const savedDebugMode = localStorage.getItem('debugMode');
+            window.debugMode = savedDebugMode === 'true';
+            document.getElementById('debugModeSwitch').checked = window.debugMode;
+            
             connectWebSocket();
             setupEventListeners();
             
@@ -986,6 +1061,11 @@
                 case 'chat_history':
                     loadChatHistory(data.messages);
                     addLogMessage(`> 📚 加载历史记录 ${data.showing_recent}/${data.total_messages} 条`);
+                    break;
+                    
+                case 'log_stream':
+                    // 处理流式日志消息
+                    handleLogStream(data);
                     break;
                     
                 case 'pong':
@@ -1963,6 +2043,103 @@
             const time = new Date().toLocaleTimeString();
             logDiv.innerHTML += `[${time}] ${message}<br>`;
             logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        // 处理流式日志消息
+        function handleLogStream(data) {
+            // 过滤不必要的日志级别
+            if (data.level === 'DEBUG' && !window.debugMode) {
+                return; // 在非调试模式下不显示DEBUG日志
+            }
+            
+            // 添加到聊天对话框中
+            addLogMessageToChat(data);
+            
+            // 同时在控制台输出
+            console.log('📋 日志:', data.message);
+        }
+        
+        // 切换调试模式
+        function toggleDebugMode() {
+            const debugSwitch = document.getElementById('debugModeSwitch');
+            window.debugMode = debugSwitch.checked;
+            
+            if (window.debugMode) {
+                addLogMessage('> 🔍 调试模式已开启 - 显示所有日志级别');
+            } else {
+                addLogMessage('> 🔍 调试模式已关闭 - 隐藏DEBUG日志');
+            }
+            
+            // 保存到本地存储
+            localStorage.setItem('debugMode', window.debugMode);
+        }
+        
+        // 添加日志消息到聊天对话框
+        function addLogMessageToChat(logData) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const timestamp = new Date(logData.timestamp).toLocaleTimeString();
+            
+            // 根据日志级别选择图标和颜色
+            const levelConfig = {
+                'DEBUG': { icon: '🔍', color: '#6c757d', bgColor: '#f8f9fa' },
+                'INFO': { icon: 'ℹ️', color: '#17a2b8', bgColor: '#e8f4f8' },
+                'WARNING': { icon: '⚠️', color: '#e67e22', bgColor: '#fff3cd' },
+                'ERROR': { icon: '❌', color: '#dc3545', bgColor: '#f8d7da' },
+                'CRITICAL': { icon: '🚨', color: '#dc3545', bgColor: '#f5c6cb' }
+            };
+            
+            const config = levelConfig[logData.level] || levelConfig['INFO'];
+            
+            // 简化logger名称显示
+            let shortLogger = logData.logger
+                .replace('core.', '')
+                .replace('tools.', '')
+                .replace('communication.', '')
+                .replace('interfaces.web.frontend.', '');
+                
+            // 创建日志消息元素
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message system log-message';
+            messageDiv.innerHTML = `
+                <div class="message-bubble" style="background-color: ${config.bgColor}; border-left: 3px solid ${config.color}; max-width: 90%;">
+                    <div class="log-header" style="display: flex; align-items: center; margin-bottom: 4px; font-size: 0.75rem; color: ${config.color};">
+                        <span style="margin-right: 6px;">${config.icon}</span>
+                        <span style="font-weight: 500; margin-right: 8px;">${logData.level}</span>
+                        <span style="color: #6c757d; margin-right: 8px;">[${shortLogger}]</span>
+                        <span style="color: #6c757d; margin-left: auto;">${timestamp}</span>
+                    </div>
+                    <div class="log-content" style="font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 0.8rem; color: #333; line-height: 1.3; word-break: break-word;">
+                        ${escapeHtml(logData.message)}
+                    </div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            
+            // 自动滚动到底部
+            scrollToBottom();
+            
+            // 限制消息数量，保持性能
+            const allMessages = messagesContainer.querySelectorAll('.message');
+            if (allMessages.length > 1000) {
+                // 移除最旧的日志消息（保留用户和AI消息）
+                const logMessages = messagesContainer.querySelectorAll('.message.log-message');
+                for (let i = 0; i < Math.min(100, logMessages.length); i++) {
+                    logMessages[i].remove();
+                }
+            }
+        }
+        
+        // HTML转义函数
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
         }
         
         // 格式化文件大小

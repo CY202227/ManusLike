@@ -157,6 +157,7 @@ async def initialize_components():
         
         # 初始化事件发射器
         from core.event_emitter import ExecutionEventEmitter
+        from core.stream_logger import stream_logger_manager
         event_emitter = ExecutionEventEmitter()
         
         # 初始化任务规划器和执行器
@@ -218,6 +219,18 @@ class ConnectionManager:
         session = get_or_create_user_session(user_id)
         session.websocket = websocket
         
+        # 创建用户的流式日志处理器
+        from core.stream_logger import create_user_log_stream
+        
+        async def log_callback(log_data):
+            """日志回调函数"""
+            try:
+                await self.send_personal_message(log_data, user_id)
+            except Exception as e:
+                logger.error(f"发送日志到用户 {user_id} 失败: {e}")
+        
+        create_user_log_stream(user_id, log_callback)
+        
         logger.info(f"用户 {user_id} 建立WebSocket连接")
     
     def disconnect(self, user_id: str):
@@ -227,6 +240,10 @@ class ConnectionManager:
         
         if user_id in user_sessions:
             user_sessions[user_id].websocket = None
+        
+        # 移除用户的流式日志处理器
+        from core.stream_logger import remove_user_log_stream
+        remove_user_log_stream(user_id)
         
         logger.info(f"用户 {user_id} 断开WebSocket连接")
     
