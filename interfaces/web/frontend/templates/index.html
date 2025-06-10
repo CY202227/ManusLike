@@ -3,238 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manus AI System - 智能代理系统</title>
+    <title>Manus AI 智能代理系统</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="/static/css/style.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        .hero-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 1rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .feature-icon {
+            width: 3rem;
+            height: 3rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-cyber {
+            background: linear-gradient(135deg, #00ffff, #8000ff);
+            border: none;
+            color: #0a0a0f;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-family: 'Orbitron', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        .btn-cyber:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 25px rgba(0, 255, 255, 0.5);
+            background: linear-gradient(135deg, #ff0080, #00ffff);
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .theme-selector {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .theme-option {
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-option:hover {
+            color: inherit;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <!-- 导航栏 -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
             <div class="container">
-                <a class="navbar-brand" href="/">
-                    <i class="bi bi-robot"></i>
-                    Manus AI System
-                </a>
-                <span class="navbar-text">
-                    世界首个通用AI代理系统
-                </span>
-            </div>
-        </nav>
-
-        <!-- 主要内容 -->
-        <div class="container mt-5">
             <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <!-- 欢迎区域 -->
+            <div class="col-lg-10">
+                <div class="hero-card p-5">
+                    <!-- 标题区域 -->
                     <div class="text-center mb-5">
-                        <h1 class="display-4 text-primary">
-                            <i class="bi bi-cpu"></i>
-                            欢迎使用 Manus AI
+                        <h1 class="display-4 fw-bold text-primary mb-3">
+                            <i class="bi bi-robot me-3"></i>
+                            Manus AI
                         </h1>
-                        <p class="lead">
-                            类似Manus AI的智能代理系统，支持任务自动分解、独立执行和结果交付
+                        <p class="lead text-muted">
+                            全新对话式AI智能代理系统
+                        </p>
+                        <p class="text-muted">
+                            实时日志、智能分析、流畅体验 - 一切尽在对话中
                         </p>
                     </div>
 
-                    <!-- 用户登录/快速开始 -->
-                    <div class="card shadow">
-                        <div class="card-header bg-light">
-                            <h5 class="card-title mb-0">
-                                <i class="bi bi-person-circle"></i>
-                                快速开始
-                            </h5>
+                    <!-- 主题选择 -->
+                    <div class="theme-selector text-center">
+                        <h4 class="mb-4">🎨 选择您的界面主题</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <a href="/chat/default" class="theme-option">
+                                    <div class="feature-card h-100">
+                                        <div class="feature-icon mx-auto" style="background: linear-gradient(135deg, #007bff, #28a745);">
+                                            <i class="bi bi-brightness-high"></i>
                         </div>
-                        <div class="card-body">
-                            <form id="loginForm">
-                                <div class="mb-3">
-                                    <label for="userId" class="form-label">用户ID</label>
-                                    <input type="text" class="form-control" id="userId" 
-                                           placeholder="请输入您的用户名或ID" required>
-                                    <div class="form-text">
-                                        如果是新用户，系统将自动为您创建会话
+                                        <h5 class="fw-bold">经典模式</h5>
+                                        <p class="text-muted small">
+                                            简洁明亮的传统界面设计，适合日常办公使用
+                                        </p>
+                                        <button class="btn btn-primary">
+                                            <i class="bi bi-arrow-right me-1"></i>
+                                            进入经典模式
+                                        </button>
                                     </div>
+                                </a>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <a href="/cyber/default" class="theme-option">
+                                    <div class="feature-card h-100">
+                                        <div class="feature-icon mx-auto" style="background: linear-gradient(135deg, #00ffff, #8000ff);">
+                                            <i class="bi bi-cpu-fill"></i>
                                 </div>
-                                <div class="d-grid gap-2">
-                                    <button type="submit" class="btn btn-primary btn-lg">
-                                        <i class="bi bi-arrow-right-circle"></i>
-                                        开始对话
+                                        <h5 class="fw-bold">赛博朋克</h5>
+                                        <p class="text-muted small">
+                                            未来感十足的暗黑科技界面，沉浸式体验
+                                        </p>
+                                        <button class="btn btn-cyber">
+                                            <i class="bi bi-lightning-charge me-1"></i>
+                                            进入赛博空间
                                     </button>
                                 </div>
-                            </form>
+                                </a>
+                            </div>
                         </div>
                     </div>
 
                     <!-- 功能特性 -->
-                    <div class="row mt-5">
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100 text-center">
-                                <div class="card-body">
-                                    <i class="bi bi-diagram-3 text-primary fs-1"></i>
-                                    <h5 class="card-title">任务自动分解</h5>
-                                    <p class="card-text">
-                                        智能分析用户需求，自动生成步骤化执行计划
-                                    </p>
+                    <div class="row mb-5">
+                        <div class="col-md-4">
+                            <div class="feature-card text-center">
+                                <div class="feature-icon mx-auto">
+                                    <i class="bi bi-chat-dots"></i>
                                 </div>
+                                <h5 class="fw-bold">对话式交互</h5>
+                                <p class="text-muted small">
+                                    所有系统日志直接显示在对话中，实时了解AI思考过程
+                                </p>
                             </div>
                         </div>
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100 text-center">
-                                <div class="card-body">
-                                    <i class="bi bi-gear-fill text-success fs-1"></i>
-                                    <h5 class="card-title">独立执行</h5>
-                                    <p class="card-text">
-                                        自动调用工具和服务，无需人工干预完成任务
-                                    </p>
+                        <div class="col-md-4">
+                            <div class="feature-card text-center">
+                                <div class="feature-icon mx-auto">
+                                    <i class="bi bi-lightning"></i>
                                 </div>
+                                <h5 class="fw-bold">实时反馈</h5>
+                                <p class="text-muted small">
+                                    WebSocket流式传输，零延迟显示任务执行详情
+                                </p>
                             </div>
                         </div>
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100 text-center">
-                                <div class="card-body">
-                                    <i class="bi bi-file-earmark-text text-info fs-1"></i>
-                                    <h5 class="card-title">结果交付</h5>
-                                    <p class="card-text">
-                                        生成详细报告和文件，提供完整的执行结果
-                                    </p>
+                        <div class="col-md-4">
+                            <div class="feature-card text-center">
+                                <div class="feature-icon mx-auto">
+                                    <i class="bi bi-palette"></i>
+                                </div>
+                                <h5 class="fw-bold">多主题支持</h5>
+                                <p class="text-muted small">
+                                    经典与赛博朋克双主题，满足不同审美需求
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 快速开始 -->
+                    <div class="text-center mb-4">
+                        <h4 class="mb-3">🚀 快速开始</h4>
+                        <div class="row justify-content-center">
+                            <div class="col-md-8">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-person-circle"></i>
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="userIdInput"
+                                           placeholder="用户ID (留空使用 default)" 
+                                           value="default">
+                                </div>
+                                <div class="input-group">
+                                    <input type="text" 
+                                           class="form-control form-control-lg" 
+                                           id="taskInput"
+                                           placeholder="输入您的任务需求，如：生成一个数据分析图表..." 
+                                           required>
+                                    <button class="btn btn-primary btn-lg" onclick="startWithTheme('classic')">
+                                        经典模式
+                                    </button>
+                                    <button class="btn btn-cyber btn-lg" onclick="startWithTheme('cyber')">
+                                        赛博模式
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 系统状态 -->
-                    <div class="card mt-4">
-                        <div class="card-header">
-                            <h6 class="card-title mb-0">
-                                <i class="bi bi-activity"></i>
-                                系统状态
-                            </h6>
-                        </div>
-                        <div class="card-body">
+                    <!-- 示例任务 -->
                             <div class="row">
-                                <div class="col-md-6">
-                                    <div class="d-flex justify-content-between">
-                                        <span>活跃用户:</span>
-                                        <span id="activeUsers" class="badge bg-primary">加载中...</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="d-flex justify-content-between">
-                                        <span>系统状态:</span>
-                                        <span id="systemStatus" class="badge bg-success">
-                                            <i class="bi bi-check-circle"></i>
-                                            运行中
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 快速模板 -->
-                    <div class="card mt-4">
-                        <div class="card-header">
-                            <h6 class="card-title mb-0">
-                                <i class="bi bi-lightning"></i>
-                                快速任务模板
-                            </h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-lg-6 mb-2">
-                                    <button class="btn btn-outline-primary w-100 task-template" 
-                                            data-task="生成一个Python计算器程序,不允许追问">
-                                        <i class="bi bi-code-slash"></i>
-                                        代码生成
+                        <div class="col-12">
+                            <h6 class="text-muted mb-3">💡 试试这些示例任务：</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="fillTask('生成一个销售数据的柱状图')">
+                                    📊 生成销售数据图表
                                     </button>
-                                </div>
-                                <div class="col-lg-6 mb-2">
-                                    <button class="btn btn-outline-success w-100 task-template" 
-                                            data-task="搜索最新的AI技术发展趋势,不允许追问">
-                                        <i class="bi bi-search"></i>
-                                        信息检索
+                                <button class="btn btn-outline-secondary btn-sm" onclick="fillTask('分析用户行为数据并生成报告')">
+                                    📈 分析用户行为
                                     </button>
-                                </div>
-                                <div class="col-lg-6 mb-2">
-                                    <button class="btn btn-outline-info w-100 task-template" 
-                                            data-task="生成一张科技感十足的背景图片,不允许追问">
-                                        <i class="bi bi-image"></i>
-                                        图像生成
+                                <button class="btn btn-outline-secondary btn-sm" onclick="fillTask('创建一个Python数据处理脚本')">
+                                    🐍 Python脚本生成
                                     </button>
-                                </div>
-                                <div class="col-lg-6 mb-2">
-                                    <button class="btn btn-outline-warning w-100 task-template" 
-                                            data-task="分析销售数据并生成图表,不允许追问">
-                                        <i class="bi bi-bar-chart"></i>
-                                        数据分析
+                                <button class="btn btn-outline-secondary btn-sm" onclick="fillTask('生成网站流量分析图表')">
+                                    🌐 网站流量分析
                                     </button>
-                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- 页脚 -->
-        <footer class="mt-5 py-4 bg-light text-center">
-            <div class="container">
-                <p class="text-muted mb-0">
-                    &copy; 2024 Manus AI System. 基于FastAPI和WebSocket技术构建.
-                </p>
-            </div>
-        </footer>
     </div>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    
     <script>
-        // 页面加载时获取系统状态
-        document.addEventListener('DOMContentLoaded', function() {
-            loadSystemStatus();
+        function startWithTheme(theme) {
+            const task = document.getElementById('taskInput').value;
+            const userId = document.getElementById('userIdInput').value.trim() || 'default';
+            const baseUrl = theme === 'cyber' ? `/cyber/${userId}` : `/chat/${userId}`;
             
-            // 登录表单处理
-            document.getElementById('loginForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const userId = document.getElementById('userId').value.trim();
-                if (userId) {
-                    window.location.href = `/chat/${encodeURIComponent(userId)}`;
-                }
-            });
-            
-            // 快速任务模板处理
-            document.querySelectorAll('.task-template').forEach(button => {
-                button.addEventListener('click', function() {
-                    const userId = document.getElementById('userId').value.trim();
-                    if (!userId) {
-                        alert('请先输入用户ID');
-                        document.getElementById('userId').focus();
-                        return;
-                    }
-                    
-                    const task = this.getAttribute('data-task');
-                    const url = `/chat/${encodeURIComponent(userId)}?task=${encodeURIComponent(task)}`;
-                    window.location.href = url;
-                });
-            });
-        });
-        
-        // 加载系统状态
-        async function loadSystemStatus() {
-            try {
-                const response = await fetch('/api/users');
-                const data = await response.json();
-                document.getElementById('activeUsers').textContent = data.active_users;
-            } catch (error) {
-                console.error('获取系统状态失败:', error);
-                document.getElementById('activeUsers').textContent = '无法获取';
+            if (task.trim()) {
+                window.location.href = `${baseUrl}?task=${encodeURIComponent(task)}`;
+            } else {
+                window.location.href = baseUrl;
             }
         }
         
-        // 每30秒更新一次系统状态
-        setInterval(loadSystemStatus, 30000);
+        function fillTask(task) {
+            document.getElementById('taskInput').value = task;
+        }
+        
+        // 回车键快速启动
+        document.getElementById('taskInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                startWithTheme('classic');
+            }
+        });
+        
+        // 用户ID输入框回车键
+        document.getElementById('userIdInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('taskInput').focus();
+            }
+        });
     </script>
 </body>
 </html> 

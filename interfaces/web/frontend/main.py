@@ -279,6 +279,16 @@ async def chat_page(request: Request, user_id: str):
         "session_id": session.session_id
     })
 
+@app.get("/cyber/{user_id}", response_class=HTMLResponse)
+async def cyber_chat_page(request: Request, user_id: str):
+    """赛博朋克风格聊天页面"""
+    session = get_or_create_user_session(user_id)
+    return templates.TemplateResponse("chat_cyber.html", {
+        "request": request,
+        "user_id": user_id,
+        "session_id": session.session_id
+    })
+
 @app.get("/monitor/{user_id}", response_class=HTMLResponse)
 async def monitor_page(request: Request, user_id: str):
     """任务监控页面"""

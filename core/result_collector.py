@@ -258,7 +258,7 @@ class ResultCollector:
         
         Args:
             report: 结果报告
-            formats: 保存格式列表，支持 'json', 'markdown', 'text'
+            formats: 保存格式列表，支持 'json',  'text'
             file_manager: 文件管理器实例，如果提供则自动注册文件
             
         Returns:

@@ -536,71 +536,45 @@
         .status-busy { background: #ffc107; }
         .status-offline { background: #6c757d; }
         
-        /* 流式日志样式 */
-        .log-entry {
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        /* 聊天中的日志消息样式 */
+        .message.log-message {
+            margin-bottom: 0.3rem;
+            opacity: 0.85;
+        }
+        
+        .message.log-message .message-bubble {
             font-size: 0.8rem;
-            line-height: 1.4;
-            margin-bottom: 2px;
-            padding: 2px 4px;
-            border-radius: 3px;
+            padding: 0.4rem 0.6rem;
+            margin: 0 1rem;
+            border-radius: 0.3rem;
+            position: relative;
+        }
+        
+        .message.log-message .log-header {
+            font-weight: 500;
+            opacity: 0.8;
+        }
+        
+        .message.log-message .log-content {
+            margin-top: 2px;
+        }
+        
+        /* 日志消息悬停效果 */
+        .message.log-message:hover {
+            opacity: 1;
+            transform: translateX(2px);
             transition: all 0.2s ease;
         }
         
-        .log-entry:hover {
-            background-color: rgba(0, 123, 255, 0.05);
+        /* 不同日志级别的特殊样式 */
+        .message.log-message.log-error .message-bubble {
+            border-left-width: 4px;
+            box-shadow: 0 1px 3px rgba(220, 53, 69, 0.2);
         }
         
-        .log-entry .badge {
-            font-size: 0.7rem;
-            padding: 1px 6px;
-            margin-right: 4px;
-            font-weight: 500;
-        }
-        
-        .log-entry .log-message {
-            word-break: break-word;
-            color: #495057;
-        }
-        
-        .log-entry.log-error .log-message {
-            color: #dc3545;
-            font-weight: 500;
-        }
-        
-        .log-entry.log-warning .log-message {
-            color: #e67e22;
-            font-weight: 500;
-        }
-        
-        .log-entry.log-info .log-message {
-            color: #3498db;
-        }
-        
-        .log-entry.log-debug .log-message {
-            color: #6c757d;
-            font-style: italic;
-        }
-        
-        /* 日志级别颜色 */
-        .badge.text-info {
-            background-color: rgba(23, 162, 184, 0.1);
-            color: #17a2b8;
-        }
-        
-        .badge.text-warning {
-            background-color: rgba(255, 193, 7, 0.1);
-            color: #e67e22;
-        }
-        
-        .badge.text-danger {
-            background-color: rgba(220, 53, 69, 0.1);
-            color: #dc3545;
-        }
-        
-        .badge.text-muted {
-            background-color: rgba(108, 117, 125, 0.1);
-            color: #6c757d;
+        .message.log-message.log-warning .message-bubble {
+            border-left-width: 4px;
+            box-shadow: 0 1px 3px rgba(255, 193, 7, 0.2);
         }
         
         /* 文件样式 */
@@ -680,16 +654,16 @@
             }
             
             .chat-main {
-                height: 60vh;
+                height: 70vh;
             }
             
             .chat-messages {
-                max-height: 50vh;
+                max-height: 60vh;
                 padding: 0.5rem;
             }
             
             .monitor-panel {
-                height: 40vh;
+                height: 30vh;
                 border-left: none;
                 border-top: 1px solid #dee2e6;
             }
@@ -703,6 +677,11 @@
             .message-header {
                 font-size: 0.7rem;
             }
+            
+            .message.log-message .message-bubble {
+                margin: 0 0.5rem;
+                font-size: 0.75rem;
+            }
         }
         
         @media (max-width: 480px) {
@@ -713,6 +692,12 @@
             
             .chat-messages {
                 padding: 0.25rem;
+            }
+            
+            .message.log-message .message-bubble {
+                margin: 0 0.25rem;
+                font-size: 0.7rem;
+                padding: 0.3rem 0.4rem;
             }
         }
         
@@ -753,7 +738,7 @@
         <!-- 主要聊天界面 -->
         <div class="row chat-container">
             <!-- 左侧聊天区域 -->
-            <div class="col-lg-8 p-0">
+            <div class="col-lg-9 p-0">
                 <div class="chat-main">
                     <!-- 聊天消息区域 -->
                     <div class="chat-messages" id="chatMessages">
@@ -816,7 +801,7 @@
             </div>
             
             <!-- 右侧监控面板 -->
-            <div class="col-lg-4 p-0">
+            <div class="col-lg-3 p-0">
                 <div class="monitor-panel">
                     <!-- 任务状态面板 -->
                     <div class="p-3 border-bottom">
@@ -2037,12 +2022,10 @@
             stepsDiv.innerHTML = stepsHtml;
         }
         
-        // 添加日志消息
+        // 添加日志消息（已弃用，现在使用系统消息）
         function addLogMessage(message) {
-            const logDiv = document.getElementById('monitorLog');
-            const time = new Date().toLocaleTimeString();
-            logDiv.innerHTML += `[${time}] ${message}<br>`;
-            logDiv.scrollTop = logDiv.scrollHeight;
+            // 现在日志直接显示在对话中，这个函数保留以兼容现有代码
+            console.log('日志:', message);
         }
         
         // 处理流式日志消息
@@ -2065,9 +2048,9 @@
             window.debugMode = debugSwitch.checked;
             
             if (window.debugMode) {
-                addLogMessage('> 🔍 调试模式已开启 - 显示所有日志级别');
+                addSystemMessage('🔍 详细日志已开启 - 系统运行日志将显示在对话中');
             } else {
-                addLogMessage('> 🔍 调试模式已关闭 - 隐藏DEBUG日志');
+                addSystemMessage('🔍 详细日志已关闭 - 仅显示重要信息');
             }
             
             // 保存到本地存储
@@ -2099,7 +2082,7 @@
                 
             // 创建日志消息元素
             const messageDiv = document.createElement('div');
-            messageDiv.className = 'message system log-message';
+            messageDiv.className = `message system log-message log-${logData.level.toLowerCase()}`;
             messageDiv.innerHTML = `
                 <div class="message-bubble" style="background-color: ${config.bgColor}; border-left: 3px solid ${config.color}; max-width: 90%;">
                     <div class="log-header" style="display: flex; align-items: center; margin-bottom: 4px; font-size: 0.75rem; color: ${config.color};">

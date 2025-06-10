@@ -256,7 +256,7 @@ class TerminalChatBot:
                 
                 # 5. 保存报告
                 print("💾 保存执行报告...")
-                saved_files = await self.result_collector.save_report(report, ['json', 'markdown'], self.file_manager)
+                saved_files = await self.result_collector.save_report(report, ['json'], self.file_manager)
                 
                 # 记录执行结果
                 self.conversation_history.append({

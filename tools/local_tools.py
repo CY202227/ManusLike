@@ -378,7 +378,15 @@ def file_generation(prompt: str, file_type: str = "txt", file_name: str = "", ou
             "error": error_msg
         }
 
-
+#读知识库生成报告
+def read_knowledge_base(knowledge_base_path: str) -> Dict[str, Any]:
+    """
+    读取知识库/数据库生成报告
+    
+    Args:
+        knowledge_base_path: 知识库路径
+    """
+    pass
 if __name__ == "__main__":
     # print(image_generation("一个穿着红色衣服的女孩，站在海边，海浪拍打着沙滩，背景是蓝色的天空和白色的云朵"))
     # res = speech_to_text("/home/qichen/zh/data/daiyu.mp4")

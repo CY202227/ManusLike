@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manus AI - CyberSpace</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --cyber-primary: #00ffff;
+            --cyber-secondary: #ff0080;
+            --cyber-accent: #8000ff;
+            --cyber-green: #00ff41;
+            --cyber-bg-dark: #0a0a0f;
+            --cyber-bg-medium: #1a1a2e;
+            --cyber-bg-light: #16213e;
+            --cyber-text: #00ffff;
+            --cyber-text-dim: #7c9cc9;
+            --cyber-border: #00ffff33;
+            --cyber-glow: #00ffff77;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--cyber-bg-dark);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            color: var(--cyber-text);
+            position: relative;
+        }
+        
+        /* 赛博背景动画 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 0, 128, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(128, 0, 255, 0.1) 0%, transparent 50%);
+            animation: cyberPulse 8s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        @keyframes cyberPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+        
+        /* 网格背景 */
+        .cyber-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        /* 顶部导航栏 */
+        .cyber-navbar {
+            background: linear-gradient(135deg, var(--cyber-bg-medium), var(--cyber-bg-light));
+            border-bottom: 2px solid var(--cyber-primary);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        
+        .cyber-navbar::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--cyber-primary), var(--cyber-secondary), var(--cyber-primary));
+            animation: navGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes navGlow {
+            0%, 100% { box-shadow: 0 0 5px var(--cyber-glow); }
+            50% { box-shadow: 0 0 15px var(--cyber-glow); }
+        }
+        
+        .cyber-logo {
+            font-family: 'Orbitron', monospace;
+            font-weight: 900;
+            font-size: 1.5rem;
+            color: var(--cyber-primary);
+            text-shadow: 0 0 10px var(--cyber-glow);
+        }
+        
+        .cyber-user {
+            font-family: 'Orbitron', monospace;
+            color: var(--cyber-text-dim);
+        }
+        
+        .cyber-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--cyber-green);
+            box-shadow: 0 0 10px var(--cyber-green);
+            animation: statusPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* 主容器 */
+        .chat-container {
+            height: calc(100vh - 80px);
+            display: flex;
+            position: relative;
+        }
+        
+        /* 扫描线效果 */
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyber-primary), transparent);
+            animation: scanMove 4s linear infinite;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        @keyframes scanMove {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(calc(100vh - 80px)); opacity: 0; }
+        }
+        
+        /* 聊天主区域 */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(26, 26, 46, 0.6);
+            backdrop-filter: blur(10px);
+            border-right: 2px solid var(--cyber-border);
+            position: relative;
+        }
+        
+        .chat-main::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -2px;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--cyber-primary), var(--cyber-secondary));
+            box-shadow: 0 0 10px var(--cyber-glow);
+            animation: borderPulse 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes borderPulse {
+            0% { box-shadow: 0 0 5px var(--cyber-glow); }
+            100% { box-shadow: 0 0 20px var(--cyber-glow); }
+        }
+        
+        /* 消息容器 */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: rgba(10, 10, 15, 0.8);
+            position: relative;
+        }
+        
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track {
+            background: var(--cyber-bg-dark);
+            border-radius: 4px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--cyber-primary), var(--cyber-secondary));
+            border-radius: 4px;
+            box-shadow: 0 0 5px var(--cyber-glow);
+        }
+        
+        /* 消息样式 */
+        .message {
+            margin-bottom: 1rem;
+            animation: messageSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes messageSlideIn {
+            from { 
+                opacity: 0; 
+                transform: translateX(-20px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateX(0);
+            }
+        }
+        
+        .message.user {
+            text-align: right;
+        }
+        
+        .message-bubble {
+            display: inline-block;
+            max-width: 80%;
+            padding: 0.8rem 1.2rem;
+            border-radius: 15px;
+            position: relative;
+            word-wrap: break-word;
+        }
+        
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, var(--cyber-primary), var(--cyber-accent));
+            color: var(--cyber-bg-dark);
+            font-weight: 500;
+            border: 1px solid var(--cyber-primary);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+        }
+        
+        .message.assistant .message-bubble {
+            background: linear-gradient(135deg, var(--cyber-bg-medium), var(--cyber-bg-light));
+            color: var(--cyber-text);
+            border: 1px solid var(--cyber-border);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+        }
+        
+        .message.system .message-bubble {
+            background: linear-gradient(135deg, var(--cyber-bg-dark), var(--cyber-bg-medium));
+            color: var(--cyber-text-dim);
+            border: 1px solid var(--cyber-border);
+            font-size: 0.9rem;
+        }
+        
+        /* 日志消息样式 */
+        .message.log-message {
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+        
+        .message.log-message .message-bubble {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            padding: 0.5rem 0.8rem;
+            border-radius: 8px;
+            max-width: 95%;
+        }
+        
+        .message.log-debug .message-bubble {
+            background: rgba(108, 117, 125, 0.2);
+            border-left: 3px solid #6c757d;
+            color: var(--cyber-text-dim);
+        }
+        
+        .message.log-info .message-bubble {
+            background: rgba(0, 255, 255, 0.1);
+            border-left: 3px solid var(--cyber-primary);
+            color: var(--cyber-primary);
+        }
+        
+        .message.log-warning .message-bubble {
+            background: rgba(255, 193, 7, 0.1);
+            border-left: 3px solid #ffc107;
+            color: #ffc107;
+        }
+        
+        .message.log-error .message-bubble {
+            background: rgba(255, 0, 128, 0.1);
+            border-left: 3px solid var(--cyber-secondary);
+            color: var(--cyber-secondary);
+        }
+        
+        .message.log-critical .message-bubble {
+            background: rgba(255, 0, 0, 0.2);
+            border-left: 3px solid #ff0000;
+            color: #ff0000;
+            animation: criticalBlink 1s ease-in-out infinite;
+        }
+        
+        @keyframes criticalBlink {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; }
+        }
+        
+        .log-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+        
+        .log-content {
+            font-weight: 400;
+            line-height: 1.3;
+        }
+        
+        /* 输入区域 */
+        .chat-input {
+            padding: 1rem;
+            background: rgba(26, 26, 46, 0.9);
+            border-top: 1px solid var(--cyber-border);
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .form-control {
+            background: rgba(10, 10, 15, 0.8);
+            border: 2px solid var(--cyber-border);
+            color: var(--cyber-text);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            padding: 0.8rem 1rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            background: rgba(10, 10, 15, 0.9);
+            border-color: var(--cyber-primary);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            color: var(--cyber-text);
+        }
+        
+        .form-control::placeholder {
+            color: var(--cyber-text-dim);
+        }
+        
+        .btn-cyber {
+            background: linear-gradient(135deg, var(--cyber-primary), var(--cyber-accent));
+            border: none;
+            color: var(--cyber-bg-dark);
+            font-weight: 600;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            font-family: 'Orbitron', monospace;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-cyber:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 255, 0.4);
+            background: linear-gradient(135deg, var(--cyber-accent), var(--cyber-secondary));
+        }
+        
+        /* 右侧面板 */
+        .cyber-panel {
+            width: 350px;
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(10px);
+            border-left: 2px solid var(--cyber-border);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .panel-section {
+            padding: 1rem;
+            border-bottom: 1px solid var(--cyber-border);
+        }
+        
+        .panel-title {
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            color: var(--cyber-primary);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+        
+        .task-status {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid var(--cyber-primary);
+            border-radius: 8px;
+            padding: 0.8rem;
+            font-family: 'Courier New', monospace;
+            color: var(--cyber-text);
+        }
+        
+        .cyber-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: var(--cyber-bg-dark);
+            border: 2px solid var(--cyber-border);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .cyber-switch.active {
+            border-color: var(--cyber-primary);
+            box-shadow: 0 0 10px var(--cyber-glow);
+        }
+        
+        .cyber-switch::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 22px;
+            height: 22px;
+            background: var(--cyber-primary);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 5px var(--cyber-glow);
+        }
+        
+        .cyber-switch.active::before {
+            transform: translateX(28px);
+            background: var(--cyber-green);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .chat-container {
+                flex-direction: column;
+            }
+            
+            .cyber-panel {
+                width: 100%;
+                height: 200px;
+                border-left: none;
+                border-top: 2px solid var(--cyber-border);
+            }
+            
+            .chat-main {
+                height: calc(100vh - 280px);
+            }
+        }
+        
+        /* 加载动画 */
+        .cyber-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--cyber-primary);
+            border-radius: 50%;
+            animation: loadingPulse 1.4s ease-in-out infinite both;
+        }
+        
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        .loading-dot:nth-child(3) { animation-delay: 0; }
+        
+        @keyframes loadingPulse {
+            0%, 80%, 100% {
+                transform: scale(0);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cyber-grid"></div>
+    
+    <!-- 顶部导航 -->
+    <nav class="cyber-navbar">
+        <div class="cyber-logo">
+            <i class="bi bi-cpu-fill me-2"></i>
+            MANUS.AI
+        </div>
+        <div class="cyber-user" onclick="editUserId()">
+            <i class="bi bi-person-circle me-2"></i>
+            USER: <span id="currentUserId">{{ user_id }}</span>
+            <i class="bi bi-pencil-square ms-1" style="font-size: 0.8rem; opacity: 0.7;"></i>
+        </div>
+        <div class="cyber-status">
+            <span class="status-indicator" id="connectionStatus"></span>
+            <span id="connectionText">CONNECTING...</span>
+        </div>
+    </nav>
+    
+    <!-- 主容器 -->
+    <div class="chat-container">
+        <div class="scan-line"></div>
+        
+        <!-- 聊天主区域 -->
+        <div class="chat-main">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message system">
+                    <div class="message-bubble">
+                        <i class="bi bi-shield-check me-2"></i>
+                        MANUS AI SYSTEM INITIALIZED<br>
+                        Welcome to CyberSpace. Ready for neural interface.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 输入区域 -->
+            <div class="chat-input">
+                <div class="input-group">
+                    <input type="text" 
+                           class="form-control" 
+                           id="messageInput" 
+                           placeholder="输入指令..." 
+                           autocomplete="off">
+                    <button class="btn btn-cyber ms-2" id="sendButton">
+                        <i class="bi bi-send-fill"></i>
+                        EXECUTE
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右侧控制面板 -->
+        <div class="cyber-panel">
+            <!-- 系统状态 -->
+            <div class="panel-section">
+                <div class="panel-title">
+                    <i class="bi bi-activity me-2"></i>
+                    System Status
+                </div>
+                <div class="task-status" id="taskStatus">
+                    STANDBY - Awaiting input
+                </div>
+            </div>
+            
+            <!-- 执行进程 -->
+            <div class="panel-section">
+                <div class="panel-title">
+                    <i class="bi bi-cpu me-2"></i>
+                    Neural Process
+                </div>
+                <div id="taskSteps">
+                    <div class="text-center" style="color: var(--cyber-text-dim);">
+                        <div class="cyber-loading">
+                            <div class="loading-dot"></div>
+                            <div class="loading-dot"></div>
+                            <div class="loading-dot"></div>
+                        </div>
+                        <div class="mt-2">Analyzing patterns...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 数据文件 -->
+            <div class="panel-section">
+                <div class="panel-title">
+                    <i class="bi bi-file-binary me-2"></i>
+                    Data Files
+                </div>
+                <div id="generatedFiles">
+                    <div class="text-center" style="color: var(--cyber-text-dim);">
+                        No data streams detected
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 系统设置 -->
+            <div class="panel-section">
+                <div class="panel-title">
+                    <i class="bi bi-gear-fill me-2"></i>
+                    Neural Settings
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span style="color: var(--cyber-text-dim);">Debug Mode</span>
+                    <div class="cyber-switch" id="debugModeSwitch" onclick="toggleDebugMode()"></div>
+                </div>
+                <small style="color: var(--cyber-text-dim); font-size: 0.7rem;">
+                    Enable deep neural logging
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const userId = "{{ user_id }}";
+        const sessionId = "{{ session_id }}";
+        let websocket = null;
+        let isConnected = false;
+        let currentTaskId = null;
+        let currentStreamMessage = null;
+        let streamAccumulator = '';
+        let streamStartTime = null;
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+        
+        // 初始化应用
+        function initializeApp() {
+            console.log('初始化 Manus AI CyberSpace...');
+            
+            // 初始化调试模式
+            const savedDebugMode = localStorage.getItem('debugMode');
+            window.debugMode = savedDebugMode === 'true';
+            updateDebugSwitch();
+            
+            connectWebSocket();
+            setupEventListeners();
+            
+            // 检查URL参数中的预设任务
+            const urlParams = new URLSearchParams(window.location.search);
+            const task = urlParams.get('task');
+            if (task) {
+                document.getElementById('messageInput').value = decodeURIComponent(task);
+                setTimeout(() => {
+                    if (isConnected) {
+                        submitMessage();
+                    }
+                }, 1000);
+            }
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            
+            // 回车键发送
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    submitMessage();
+                }
+            });
+            
+            // 按钮点击发送
+            sendButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                submitMessage();
+            });
+        }
+        
+        // 建立WebSocket连接
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/${encodeURIComponent(userId)}`;
+            
+            console.log('连接WebSocket:', wsUrl);
+            websocket = new WebSocket(wsUrl);
+            
+            websocket.onopen = function(event) {
+                isConnected = true;
+                updateConnectionStatus('online', 'CONNECTED');
+                addSystemMessage('🔗 Neural link established');
+                console.log('WebSocket连接成功');
+            };
+            
+            websocket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                console.log('收到WebSocket消息:', data);
+                handleWebSocketMessage(data);
+            };
+            
+            websocket.onclose = function(event) {
+                isConnected = false;
+                updateConnectionStatus('offline', 'DISCONNECTED');
+                addSystemMessage('🔗 Neural link lost. Reconnecting in 5 seconds...');
+                console.log('WebSocket连接断开');
+                
+                setTimeout(connectWebSocket, 5000);
+            };
+            
+            websocket.onerror = function(error) {
+                console.error('WebSocket错误:', error);
+                updateConnectionStatus('offline', 'ERROR');
+                addSystemMessage('❌ Neural interface error');
+            };
+        }
+        
+        // 处理WebSocket消息
+        function handleWebSocketMessage(data) {
+            console.log('🔄 处理WebSocket消息:', data.type, data);
+            
+            switch(data.type) {
+                case 'system':
+                    addSystemMessage(data.message);
+                    break;
+                    
+                case 'new_message':
+                    addMessage(data.message);
+                    break;
+                    
+                case 'stream_output':
+                    addStreamOutput(data.message);
+                    break;
+                    
+                case 'task_start':
+                    finishStreamOutput();
+                    showTypingIndicator();
+                    updateTaskStatus('ANALYZING', 'warning');
+                    resetTaskSteps();
+                    break;
+                    
+                case 'task_progress':
+                    updateTaskStatus(data.message, 'info');
+                    if (data.stage) {
+                        updateTaskStage(data.stage);
+                    }
+                    break;
+                
+                case 'detailed_progress':
+                    handleDetailedProgress(data);
+                    forceUIUpdate();
+                    break;
+                    
+                case 'log_stream':
+                    handleLogStream(data);
+                    break;
+                    
+                case 'task_complete':
+                    console.log('任务完成，数据:', data);
+                    finishStreamOutput();
+                    hideTypingIndicator();
+                    updateTaskStatus('MISSION COMPLETE', 'success');
+                    
+                    if (data.task_id) {
+                        currentTaskId = data.task_id;
+                        console.log('保存当前任务ID:', currentTaskId);
+                    }
+                    
+                    handleTaskFiles(data);
+                    break;
+                    
+                case 'error':
+                    finishStreamOutput();
+                    hideTypingIndicator();
+                    updateTaskStatus('SYSTEM ERROR', 'danger');
+                    addSystemMessage(`❌ Error: ${data.message}`);
+                    break;
+                    
+                case 'chat_history':
+                    loadChatHistory(data.messages);
+                    break;
+                    
+                case 'pong':
+                    console.log('📡 收到心跳响应');
+                    break;
+                    
+                default:
+                    console.log('❓ 未知消息类型:', data.type, data);
+            }
+        }
+        
+        // 更新连接状态
+        function updateConnectionStatus(status, text) {
+            const indicator = document.getElementById('connectionStatus');
+            const textElement = document.getElementById('connectionText');
+            
+            indicator.className = `status-indicator status-${status}`;
+            textElement.textContent = text;
+        }
+        
+        // 更新任务状态
+        function updateTaskStatus(message, type) {
+            const statusDiv = document.getElementById('taskStatus');
+            statusDiv.textContent = message;
+        }
+        
+        // 添加系统消息
+        function addSystemMessage(message) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message system';
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    ${message}
+                </div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+        
+        // 添加用户消息
+        function addUserMessage(message) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    ${escapeHtml(message)}
+                </div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+        
+        // 添加AI消息
+        function addAssistantMessage(message) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    ${formatMessageContent(message)}
+                </div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+        
+        // 处理流式日志消息
+        function handleLogStream(data) {
+            if (data.level === 'DEBUG' && !window.debugMode) {
+                return;
+            }
+            
+            addLogMessageToChat(data);
+            console.log('📋 日志:', data.message);
+        }
+        
+        // 添加日志消息到聊天对话框
+        function addLogMessageToChat(logData) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const timestamp = new Date(logData.timestamp).toLocaleTimeString();
+            
+            const levelConfig = {
+                'DEBUG': { icon: '🔍', color: '#6c757d' },
+                'INFO': { icon: 'ℹ️', color: 'var(--cyber-primary)' },
+                'WARNING': { icon: '⚠️', color: '#ffc107' },
+                'ERROR': { icon: '❌', color: 'var(--cyber-secondary)' },
+                'CRITICAL': { icon: '🚨', color: '#ff0000' }
+            };
+            
+            const config = levelConfig[logData.level] || levelConfig['INFO'];
+            
+            let shortLogger = logData.logger
+                .replace('core.', '')
+                .replace('tools.', '')
+                .replace('communication.', '')
+                .replace('interfaces.web.frontend.', '');
+                
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message system log-message log-${logData.level.toLowerCase()}`;
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    <div class="log-header">
+                        <span>${config.icon}</span>
+                        <span style="font-weight: 500; margin-left: 6px;">${logData.level}</span>
+                        <span style="margin-left: 8px; opacity: 0.7;">[${shortLogger}]</span>
+                        <span style="margin-left: auto; opacity: 0.6;">${timestamp}</span>
+                    </div>
+                    <div class="log-content">
+                        ${escapeHtml(logData.message)}
+                    </div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+            
+            // 限制消息数量
+            const allMessages = messagesContainer.querySelectorAll('.message');
+            if (allMessages.length > 1000) {
+                const logMessages = messagesContainer.querySelectorAll('.message.log-message');
+                for (let i = 0; i < Math.min(100, logMessages.length); i++) {
+                    logMessages[i].remove();
+                }
+            }
+        }
+        
+        // 切换调试模式
+        function toggleDebugMode() {
+            window.debugMode = !window.debugMode;
+            updateDebugSwitch();
+            
+            if (window.debugMode) {
+                addSystemMessage('🔍 Deep neural logging activated');
+            } else {
+                addSystemMessage('🔍 Neural logging minimized');
+            }
+            
+            localStorage.setItem('debugMode', window.debugMode);
+        }
+        
+        // 更新调试开关状态
+        function updateDebugSwitch() {
+            const debugSwitch = document.getElementById('debugModeSwitch');
+            if (window.debugMode) {
+                debugSwitch.classList.add('active');
+            } else {
+                debugSwitch.classList.remove('active');
+            }
+        }
+        
+        // 防止重复发送的标志
+        let isSending = false;
+        
+        // 提交消息
+        function submitMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const message = messageInput.value.trim();
+            
+            // 防止重复发送
+            if (!message || !isConnected || isSending) return;
+            
+            // 设置发送状态
+            isSending = true;
+            
+            console.log('🚀 发送消息:', message);
+            
+            // 清空之前的任务步骤显示
+            const stepsDiv = document.getElementById('taskSteps');
+            stepsDiv.innerHTML = `
+                <div class="text-center" style="color: var(--cyber-text-dim);">
+                    <div class="cyber-loading">
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                    </div>
+                    <div class="mt-2">Analyzing neural input...</div>
+                </div>
+            `;
+            
+            // 发送到服务器，让后端统一处理消息显示
+            websocket.send(JSON.stringify({
+                type: 'task_submit',
+                content: message
+            }));
+            
+            // 清空输入框
+            messageInput.value = '';
+            
+            // 显示发送中状态
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+            messageInput.placeholder = 'Neural processing...';
+            sendButton.innerHTML = '<div class="spinner-border spinner-border-sm me-1"></div>SENDING';
+            
+            // 3秒后恢复输入框
+            setTimeout(() => {
+                isSending = false;
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.placeholder = '输入指令...';
+                sendButton.innerHTML = '<i class="bi bi-send-fill"></i>EXECUTE';
+            }, 3000);
+        }
+        
+        // HTML转义函数
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+        
+        // 格式化消息内容
+        function formatMessageContent(content) {
+            return escapeHtml(content).replace(/\n/g, '<br>');
+        }
+        
+        // 滚动到底部
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 流式输出相关函数
+        function addStreamOutput(content) {
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            if (!currentStreamMessage) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message assistant';
+                messageDiv.innerHTML = `
+                    <div class="message-bubble">
+                        <div class="stream-content"></div>
+                    </div>
+                `;
+                messagesContainer.appendChild(messageDiv);
+                currentStreamMessage = messageDiv.querySelector('.stream-content');
+                streamAccumulator = '';
+                streamStartTime = Date.now();
+            }
+            
+            streamAccumulator += content;
+            
+            if (streamAccumulator.includes('plotly') || streamAccumulator.includes('<!DOCTYPE html>')) {
+                if (streamAccumulator.trim().startsWith('<!DOCTYPE html>') || streamAccumulator.trim().startsWith('<html')) {
+                    const iframe = document.createElement('iframe');
+                    iframe.style.width = '100%';
+                    iframe.style.height = '400px';
+                    iframe.style.border = '1px solid var(--cyber-border)';
+                    iframe.style.borderRadius = '8px';
+                    iframe.srcdoc = streamAccumulator;
+                    
+                    const container = document.createElement('div');
+                    container.className = 'chart-container mb-3';
+                    container.appendChild(iframe);
+                    
+                    const caption = document.createElement('div');
+                    caption.style.color = 'var(--cyber-text-dim)';
+                    caption.style.fontSize = '0.8rem';
+                    caption.style.textAlign = 'center';
+                    caption.style.marginTop = '0.5rem';
+                    caption.innerHTML = '<i class="bi bi-bar-chart"></i> Interactive Data Visualization';
+                    container.appendChild(caption);
+                    
+                    currentStreamMessage.innerHTML = container.outerHTML;
+                } else {
+                    currentStreamMessage.innerHTML = formatMessageContent(streamAccumulator);
+                }
+            } else {
+                currentStreamMessage.innerHTML = formatMessageContent(streamAccumulator);
+            }
+            
+            scrollToBottom();
+        }
+        
+        function finishStreamOutput() {
+            if (currentStreamMessage) {
+                currentStreamMessage.style.animation = 'messageSlideIn 0.3s ease-out';
+                
+                if (streamStartTime) {
+                    const duration = ((Date.now() - streamStartTime) / 1000).toFixed(1);
+                    addSystemMessage(`Neural response completed (${duration}s)`);
+                }
+                
+                currentStreamMessage = null;
+                streamAccumulator = '';
+                streamStartTime = null;
+            }
+        }
+        
+        function showTypingIndicator() {
+            updateTaskStatus('PROCESSING...', 'info');
+        }
+        
+        function hideTypingIndicator() {
+            // 隐藏思考指示器
+        }
+        
+        function resetTaskSteps() {
+            const stepsDiv = document.getElementById('taskSteps');
+            stepsDiv.innerHTML = `
+                <div class="text-center" style="color: var(--cyber-text-dim);">
+                    <div class="cyber-loading">
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                    </div>
+                    <div class="mt-2">Initializing neural processes...</div>
+                </div>
+            `;
+        }
+        
+        function updateTaskStage(stage) {
+            const stepsDiv = document.getElementById('taskSteps');
+            const stageNames = {
+                'analyzing': 'Neural Analysis',
+                'planning': 'Process Planning',
+                'executing': 'Task Execution',
+                'collecting': 'Data Collection'
+            };
+            
+            const stageName = stageNames[stage] || stage;
+            stepsDiv.innerHTML = `
+                <div class="text-center" style="color: var(--cyber-primary);">
+                    <div class="cyber-loading">
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                    </div>
+                    <div class="mt-2">${stageName}</div>
+                </div>
+            `;
+        }
+        
+        function handleDetailedProgress(data) {
+            const eventType = data.event_type;
+            const eventData = data.data || {};
+            const message = eventData.message || '';
+            
+            console.log('🎯 处理详细进度:', eventType, message);
+            
+            switch(eventType) {
+                case 'task_analysis_start':
+                    updateTaskStage('analyzing');
+                    break;
+                case 'plan_generation_start':
+                    updateTaskStage('planning');
+                    break;
+                case 'task_start':
+                    updateTaskStage('executing');
+                    break;
+                case 'result_collection_start':
+                    updateTaskStage('collecting');
+                    break;
+            }
+        }
+        
+        function forceUIUpdate() {
+            const taskSteps = document.getElementById('taskSteps');
+            if (taskSteps) {
+                taskSteps.offsetHeight;
+            }
+        }
+        
+        function handleTaskFiles(data) {
+            console.log('🗂️ 处理任务文件，数据:', data);
+            
+            let files = [];
+            let taskId = data.task_id || currentTaskId;
+            
+            // 优先使用files_summary
+            if (data.files_summary && data.files_summary.files) {
+                console.log('使用files_summary数据');
+                files = data.files_summary.files;
+                addSystemMessage(`📁 Generated ${data.files_summary.file_count || files.length} files`);
+            } else if (data.files_generated && data.files_generated.length > 0) {
+                console.log('使用files_generated数据');
+                // 转换旧格式为新格式
+                files = data.files_generated.map(filePath => ({
+                    file_name: filePath.split('/').pop(),
+                    file_path: filePath,
+                    file_type: 'unknown',
+                    file_size: 0,
+                    task_id: taskId
+                }));
+                addSystemMessage(`📁 Generated ${files.length} files`);
+            }
+            
+            if (files.length > 0) {
+                console.log('显示文件列表:', files);
+                displayFiles(files, taskId);
+            } else {
+                console.log('没有文件可显示');
+                const filesDiv = document.getElementById('generatedFiles');
+                filesDiv.innerHTML = '<div class="text-center" style="color: var(--cyber-text-dim);">No data streams detected</div>';
+            }
+        }
+        
+        // 显示文件列表
+        function displayFiles(files, taskId) {
+            console.log('📂 displayFiles调用:', { files, taskId });
+            
+            const filesDiv = document.getElementById('generatedFiles');
+            
+            if (!files || files.length === 0) {
+                filesDiv.innerHTML = '<div class="text-center" style="color: var(--cyber-text-dim);">No data streams detected</div>';
+                return;
+            }
+            
+            let filesHtml = '';
+            
+            files.forEach((file, index) => {
+                const fileName = file.file_name || file.name || `File${index + 1}`;
+                const filePath = file.file_path || file.path || '';
+                const fileSize = file.file_size || file.size || 0;
+                const fileType = (file.file_type || file.type || 'unknown').toLowerCase();
+                
+                // 为文件添加task_id信息
+                const fileTaskId = file.task_id || taskId;
+                
+                // 文件图标
+                let iconClass = 'bi-file-earmark';
+                
+                if (['py', 'js', 'html', 'css', 'json'].includes(fileType)) {
+                    iconClass = 'bi-file-earmark-code';
+                } else if (['txt', 'md'].includes(fileType)) {
+                    iconClass = 'bi-file-earmark-text';
+                } else if (['png', 'jpg', 'jpeg', 'gif'].includes(fileType)) {
+                    iconClass = 'bi-file-earmark-image';
+                } else if (['pdf'].includes(fileType)) {
+                    iconClass = 'bi-file-earmark-pdf';
+                }
+                
+                // 格式化文件大小
+                const fileSizeText = formatFileSize(fileSize);
+                
+                // 决定使用哪种下载方式
+                let downloadAction = '';
+                if (fileTaskId && fileName) {
+                    // 优先使用task_id + filename的方式
+                    downloadAction = `downloadFileByTask('${fileTaskId}', '${fileName}')`;
+                } else if (filePath && filePath.trim() !== '') {
+                    // 备用：使用文件路径
+                    downloadAction = `downloadFile('${filePath}')`;
+                } else {
+                    // 无法下载
+                    downloadAction = `alert('File cannot be downloaded: missing info')`;
+                }
+                
+                filesHtml += `
+                    <div class="file-item mb-2 p-2" style="background: rgba(0, 255, 255, 0.1); border: 1px solid var(--cyber-border); border-radius: 5px;">
+                        <div class="d-flex align-items-center">
+                            <i class="bi ${iconClass} me-2" style="color: var(--cyber-primary);"></i>
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.9rem; font-weight: 500;">${fileName}</div>
+                                <div style="font-size: 0.7rem; opacity: 0.7;">${fileType.toUpperCase()} • ${fileSizeText}</div>
+                            </div>
+                            <button class="btn btn-sm" style="background: var(--cyber-primary); color: var(--cyber-bg-dark); font-size: 0.7rem;" onclick="${downloadAction}">
+                                <i class="bi bi-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // 添加下载包按钮（修复显示条件）
+            if (taskId && files.length > 0) {
+                filesHtml += `
+                    <div class="text-center mt-2">
+                        <button class="btn btn-sm" style="background: var(--cyber-secondary); color: var(--cyber-bg-dark); font-size: 0.7rem;" onclick="downloadTaskPackage('${taskId}')">
+                            <i class="bi bi-archive me-1"></i>
+                            Download Package (${files.length} files)
+                        </button>
+                    </div>
+                `;
+            }
+            
+            filesDiv.innerHTML = filesHtml;
+            console.log('🗂️ 文件列表HTML已更新');
+        }
+        
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+        
+        // 下载任务文件包
+        function downloadTaskPackage(taskId) {
+            try {
+                console.log('📦 下载文件包，taskId:', taskId);
+                const downloadUrl = `/api/files/download_package/${taskId}?user_id=${userId}`;
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = `task_${taskId}_files.zip`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                addSystemMessage(`📦 Package downloaded: task_${taskId}`);
+                
+            } catch (error) {
+                console.error('下载文件包失败:', error);
+                addSystemMessage(`❌ Package download failed: ${error.message}`);
+            }
+        }
+        
+        // 下载文件（通过task_id和文件名）
+        function downloadFileByTask(taskId, fileName) {
+            try {
+                console.log('📁 下载文件（通过任务）:', taskId, fileName);
+                const downloadUrl = `/api/download_by_task/${taskId}/${encodeURIComponent(fileName)}`;
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                addSystemMessage(`📁 Downloaded: ${fileName}`);
+                
+            } catch (error) {
+                console.error('下载文件失败:', error);
+                addSystemMessage(`❌ Download failed: ${fileName}`);
+            }
+        }
+        
+        function addMessage(message) {
+            console.log('📨 addMessage 调用:', message);
+            if (message.sender === 'user') {
+                addUserMessage(message.content);
+            } else if (message.sender === 'assistant') {
+                addAssistantMessage(message.content);
+            } else {
+                addSystemMessage(message.content);
+            }
+        }
+        
+        function loadChatHistory(messages) {
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            // 保留系统欢迎消息
+            const systemMsg = messagesContainer.querySelector('.message.system');
+            messagesContainer.innerHTML = '';
+            
+            // 重新添加系统欢迎消息
+            if (systemMsg) {
+                messagesContainer.appendChild(systemMsg);
+            } else {
+                messagesContainer.innerHTML = `
+                    <div class="message system">
+                        <div class="message-bubble">
+                            <i class="bi bi-shield-check me-2"></i>
+                            MANUS AI SYSTEM INITIALIZED<br>
+                            Welcome to CyberSpace. Ready for neural interface.
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 添加历史消息
+            messages.forEach(message => {
+                addMessage(message);
+            });
+            
+            scrollToBottom();
+        }
+        
+        // 用户ID编辑功能
+        function editUserId() {
+            const currentUserIdSpan = document.getElementById('currentUserId');
+            const currentUserId = currentUserIdSpan.textContent;
+            
+            const newUserId = prompt('Enter new User ID:', currentUserId);
+            if (newUserId && newUserId.trim() && newUserId !== currentUserId) {
+                const currentUrl = window.location.href;
+                const newUrl = currentUrl.replace(`/cyber/${currentUserId}`, `/cyber/${newUserId.trim()}`);
+                window.location.href = newUrl;
+            }
+        }
+        
+        // 文件下载功能
+        function downloadFile(filePath) {
+            try {
+                console.log('下载文件:', filePath);
+                const downloadUrl = `/api/download/${encodeURIComponent(filePath)}`;
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = filePath.split('/').pop();
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                addSystemMessage(`📁 Downloaded: ${filePath.split('/').pop()}`);
+                
+            } catch (error) {
+                console.error('下载文件失败:', error);
+                addSystemMessage(`❌ Download failed: ${filePath.split('/').pop()}`);
+            }
+        }
+    </script>
+</body>
+</html> 
