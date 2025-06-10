@@ -1,0 +1,39 @@
+# 核心依赖
+openai
+pydantic
+asyncio-mqtt>
+
+# MCP相关
+mcp
+
+# 数据处理
+pandas
+numpy
+
+# 文件处理
+PyPDF2
+python-docx
+openpyxl
+Pillow
+pyyaml
+
+# 图表生成
+matplotlib
+seaborn
+plotly
+
+# Web框架
+fastapi
+uvicorn
+websockets
+
+# HTTP请求
+requests
+httpx
+
+# 日志和配置
+loguru
+
+# 开发工具
+pytest
+pytest-asyncio

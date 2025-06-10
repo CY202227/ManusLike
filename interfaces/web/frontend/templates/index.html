@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manus AI System - 智能代理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- 导航栏 -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="/">
+                    <i class="bi bi-robot"></i>
+                    Manus AI System
+                </a>
+                <span class="navbar-text">
+                    世界首个通用AI代理系统
+                </span>
+            </div>
+        </nav>
+
+        <!-- 主要内容 -->
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <!-- 欢迎区域 -->
+                    <div class="text-center mb-5">
+                        <h1 class="display-4 text-primary">
+                            <i class="bi bi-cpu"></i>
+                            欢迎使用 Manus AI
+                        </h1>
+                        <p class="lead">
+                            类似Manus AI的智能代理系统，支持任务自动分解、独立执行和结果交付
+                        </p>
+                    </div>
+
+                    <!-- 用户登录/快速开始 -->
+                    <div class="card shadow">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-person-circle"></i>
+                                快速开始
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="loginForm">
+                                <div class="mb-3">
+                                    <label for="userId" class="form-label">用户ID</label>
+                                    <input type="text" class="form-control" id="userId" 
+                                           placeholder="请输入您的用户名或ID" required>
+                                    <div class="form-text">
+                                        如果是新用户，系统将自动为您创建会话
+                                    </div>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-arrow-right-circle"></i>
+                                        开始对话
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- 功能特性 -->
+                    <div class="row mt-5">
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 text-center">
+                                <div class="card-body">
+                                    <i class="bi bi-diagram-3 text-primary fs-1"></i>
+                                    <h5 class="card-title">任务自动分解</h5>
+                                    <p class="card-text">
+                                        智能分析用户需求，自动生成步骤化执行计划
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 text-center">
+                                <div class="card-body">
+                                    <i class="bi bi-gear-fill text-success fs-1"></i>
+                                    <h5 class="card-title">独立执行</h5>
+                                    <p class="card-text">
+                                        自动调用工具和服务，无需人工干预完成任务
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 text-center">
+                                <div class="card-body">
+                                    <i class="bi bi-file-earmark-text text-info fs-1"></i>
+                                    <h5 class="card-title">结果交付</h5>
+                                    <p class="card-text">
+                                        生成详细报告和文件，提供完整的执行结果
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 系统状态 -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-activity"></i>
+                                系统状态
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between">
+                                        <span>活跃用户:</span>
+                                        <span id="activeUsers" class="badge bg-primary">加载中...</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between">
+                                        <span>系统状态:</span>
+                                        <span id="systemStatus" class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i>
+                                            运行中
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 快速模板 -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-lightning"></i>
+                                快速任务模板
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-lg-6 mb-2">
+                                    <button class="btn btn-outline-primary w-100 task-template" 
+                                            data-task="生成一个Python计算器程序,不允许追问">
+                                        <i class="bi bi-code-slash"></i>
+                                        代码生成
+                                    </button>
+                                </div>
+                                <div class="col-lg-6 mb-2">
+                                    <button class="btn btn-outline-success w-100 task-template" 
+                                            data-task="搜索最新的AI技术发展趋势,不允许追问">
+                                        <i class="bi bi-search"></i>
+                                        信息检索
+                                    </button>
+                                </div>
+                                <div class="col-lg-6 mb-2">
+                                    <button class="btn btn-outline-info w-100 task-template" 
+                                            data-task="生成一张科技感十足的背景图片,不允许追问">
+                                        <i class="bi bi-image"></i>
+                                        图像生成
+                                    </button>
+                                </div>
+                                <div class="col-lg-6 mb-2">
+                                    <button class="btn btn-outline-warning w-100 task-template" 
+                                            data-task="分析销售数据并生成图表,不允许追问">
+                                        <i class="bi bi-bar-chart"></i>
+                                        数据分析
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="mt-5 py-4 bg-light text-center">
+            <div class="container">
+                <p class="text-muted mb-0">
+                    &copy; 2024 Manus AI System. 基于FastAPI和WebSocket技术构建.
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // 页面加载时获取系统状态
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSystemStatus();
+            
+            // 登录表单处理
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const userId = document.getElementById('userId').value.trim();
+                if (userId) {
+                    window.location.href = `/chat/${encodeURIComponent(userId)}`;
+                }
+            });
+            
+            // 快速任务模板处理
+            document.querySelectorAll('.task-template').forEach(button => {
+                button.addEventListener('click', function() {
+                    const userId = document.getElementById('userId').value.trim();
+                    if (!userId) {
+                        alert('请先输入用户ID');
+                        document.getElementById('userId').focus();
+                        return;
+                    }
+                    
+                    const task = this.getAttribute('data-task');
+                    const url = `/chat/${encodeURIComponent(userId)}?task=${encodeURIComponent(task)}`;
+                    window.location.href = url;
+                });
+            });
+        });
+        
+        // 加载系统状态
+        async function loadSystemStatus() {
+            try {
+                const response = await fetch('/api/users');
+                const data = await response.json();
+                document.getElementById('activeUsers').textContent = data.active_users;
+            } catch (error) {
+                console.error('获取系统状态失败:', error);
+                document.getElementById('activeUsers').textContent = '无法获取';
+            }
+        }
+        
+        // 每30秒更新一次系统状态
+        setInterval(loadSystemStatus, 30000);
+    </script>
+</body>
+</html> 

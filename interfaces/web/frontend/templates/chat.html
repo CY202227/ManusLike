@@ -1,0 +1,2173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manus AI - {{ user_id }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/static/css/style.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            height: calc(100vh - 60px);
+        }
+        
+        .chat-sidebar {
+            height: 100%;
+            background: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+        }
+        
+        .chat-main {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 1rem;
+            background: #ffffff;
+            max-height: calc(100vh - 200px);
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: #007bff #f8f9fa;
+        }
+        
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #007bff;
+            border-radius: 4px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #0056b3;
+        }
+        
+        .chat-input {
+            border-top: 1px solid #dee2e6;
+            padding: 1rem;
+            background: #f8f9fa;
+            flex-shrink: 0;
+        }
+        
+        .monitor-panel {
+            height: 100%;
+            background: #fff;
+            border-left: 1px solid #dee2e6;
+            overflow-y: auto;
+        }
+        
+        .message {
+            margin-bottom: 0.75rem;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .message.user {
+            text-align: right;
+        }
+        
+        .message.assistant {
+            text-align: left;
+        }
+        
+        .message-bubble {
+            max-width: 65%;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.75rem;
+            display: inline-block;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border-radius: 0.75rem 0.75rem 0.2rem 0.75rem;
+        }
+        
+        .message.assistant .message-bubble {
+            background: white;
+            color: #333;
+            border: 1px solid #e1e5e9;
+            border-radius: 0.75rem 0.75rem 0.75rem 0.2rem;
+        }
+        
+        .message.system .message-bubble {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            color: white;
+            text-align: center;
+            max-width: 90%;
+            margin: 0 auto;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            padding: 0.4rem 0.6rem;
+        }
+        
+        /* 消息头部信息样式 */
+        .message-header {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .message.user .message-header {
+            justify-content: flex-end;
+        }
+        
+        .message.assistant .message-header {
+            justify-content: flex-start;
+        }
+        
+        /* 优化代码块样式 */
+        .message-bubble pre {
+            background: #f8f9fa !important;
+            border: 1px solid #e9ecef !important;
+            border-radius: 0.375rem !important;
+            padding: 0.5rem !important;
+            margin: 0.5rem 0 !important;
+            font-size: 0.8rem !important;
+            overflow-x: auto;
+        }
+        
+        .message.user .message-bubble pre {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
+        }
+        
+        .message-bubble code {
+            background: #f8f9fa !important;
+            color: #e83e8c !important;
+            padding: 0.1rem 0.3rem !important;
+            border-radius: 0.25rem !important;
+            font-size: 0.85em !important;
+        }
+        
+        .message.user .message-bubble code {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: #ffd700 !important;
+        }
+        
+        .typing-indicator {
+            display: none;
+            margin-bottom: 1rem;
+        }
+        
+        .typing-dots {
+            display: inline-block;
+            position: relative;
+            width: 80px;
+            height: 20px;
+        }
+        
+        .typing-dots div {
+            position: absolute;
+            top: 8px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #007bff;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        
+        .typing-dots div:nth-child(1) { left: 8px; animation-delay: -0.32s; }
+        .typing-dots div:nth-child(2) { left: 20px; animation-delay: -0.16s; }
+        .typing-dots div:nth-child(3) { left: 32px; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        .task-progress {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .step-item {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.25rem;
+            border-left: 4px solid #6c757d;
+        }
+        
+        .step-item.running {
+            border-left-color: #007bff;
+            background: #e7f3ff;
+        }
+        
+        .step-item.completed {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .step-item.failed {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        /* 流程树样式 */
+        .process-tree {
+            background: #f8f9fa;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        .process-node {
+            position: relative;
+            margin: 0.5rem 0;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            border: 2px solid #e9ecef;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        
+        .process-node.running {
+            border-color: #007bff;
+            background: linear-gradient(135deg, #e7f3ff, #f0f8ff);
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+            animation: pulse-blue 2s infinite;
+        }
+        
+        .process-node.completed {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #d4edda, #e8f5e8);
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+        }
+        
+        .process-node.warning {
+            border-color: #ffc107;
+            background: linear-gradient(135deg, #fff3cd, #fef9e7);
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+        }
+        
+        .process-node.failed {
+            border-color: #dc3545;
+            background: linear-gradient(135deg, #f8d7da, #fdf2f2);
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.2);
+        }
+        
+        @keyframes pulse-blue {
+            0% { box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2); }
+            50% { box-shadow: 0 4px 16px rgba(0, 123, 255, 0.4); }
+            100% { box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2); }
+        }
+        
+        .process-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .process-icon {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+            font-size: 0.9rem;
+            background: #6c757d;
+            color: white;
+        }
+        
+        .process-node.running .process-icon {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+        }
+        
+        .process-node.completed .process-icon {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+        }
+        
+        .process-node.warning .process-icon {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+        }
+        
+        .process-node.failed .process-icon {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+        
+        .process-title {
+            flex: 1;
+            color: #333;
+        }
+        
+        .process-time {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-left: auto;
+        }
+        
+        .process-details {
+            margin-left: 2.75rem;
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .sub-steps {
+            margin-left: 2.75rem;
+            margin-top: 0.5rem;
+        }
+        
+        .sub-step {
+            position: relative;
+            margin: 0.25rem 0;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            border-left: 3px solid #dee2e6;
+            background: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+        
+        .sub-step.running {
+            border-left-color: #007bff;
+            background: rgba(0, 123, 255, 0.1);
+            animation: sub-pulse 1.5s infinite;
+        }
+        
+        .sub-step.completed {
+            border-left-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+        
+        .sub-step.warning {
+            border-left-color: #ffc107;
+            background: rgba(255, 193, 7, 0.1);
+        }
+        
+        .sub-step.failed {
+            border-left-color: #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+        }
+        
+        .sub-step-content {
+            display: flex;
+            align-items: center;
+        }
+        
+        .sub-step-icon {
+            margin-right: 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .sub-step-text {
+            flex: 1;
+        }
+        
+        .sub-step-time {
+            font-size: 0.7rem;
+            color: #6c757d;
+            margin-left: auto;
+        }
+        
+        /* 连接线样式 */
+        .process-connector {
+            position: absolute;
+            left: 1rem;
+            top: 3rem;
+            bottom: -0.5rem;
+            width: 2px;
+            background: linear-gradient(to bottom, #dee2e6 0%, transparent 100%);
+        }
+        
+        .process-node:last-child .process-connector {
+            display: none;
+        }
+        
+        /* 执行状态总览 */
+        .execution-summary {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e9ecef;
+        }
+        
+        .summary-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .summary-progress {
+            display: flex;
+            height: 0.5rem;
+            border-radius: 0.25rem;
+            background: #e9ecef;
+            margin-bottom: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .progress-segment {
+            transition: all 0.5s ease;
+        }
+        
+        .progress-segment.completed {
+            background: linear-gradient(90deg, #28a745, #20c997);
+        }
+        
+        .progress-segment.running {
+            background: linear-gradient(90deg, #007bff, #17a2b8);
+            animation: progress-pulse 1.5s infinite;
+        }
+        
+        .progress-segment.pending {
+            background: #e9ecef;
+        }
+        
+        @keyframes progress-pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+        
+        .summary-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        /* 步骤分类样式 */
+        .step-category {
+            margin-bottom: 0.75rem;
+        }
+        
+        .step-category-header {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 0.4rem 0.6rem;
+            border-radius: 0.25rem;
+            border-left: 3px solid #007bff;
+            margin-bottom: 0.25rem;
+            font-size: 0.85rem;
+        }
+        
+        .step-category-content {
+            padding-left: 0.5rem;
+        }
+        
+        .step-category-content .step-item {
+            margin-bottom: 0.25rem;
+            padding: 0.3rem 0.5rem;
+            font-size: 0.8rem;
+            border-left-width: 2px;
+        }
+        
+        .step-category-content .step-item.running {
+            border-left-color: #007bff;
+            background: #e7f3ff;
+            animation: pulse 2s infinite;
+        }
+        
+        .step-category-content .step-item.completed {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .step-category-content .step-item.failed {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .step-category-content .step-item.warning {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .monitor-log {
+            height: 300px;
+            overflow-y: auto;
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            padding: 1rem;
+            border-radius: 0.375rem;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        
+        .status-online { background: #28a745; }
+        .status-busy { background: #ffc107; }
+        .status-offline { background: #6c757d; }
+        
+        /* 文件样式 */
+        .file-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .file-item:hover {
+            background: #e9ecef;
+            border-color: #007bff;
+        }
+        
+        .file-icon {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #007bff;
+            color: white;
+            border-radius: 0.25rem;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+        
+        .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .file-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+            word-break: break-all;
+        }
+        
+        .file-meta {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 0.25rem;
+            flex-shrink: 0;
+        }
+        
+        .download-package {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .download-package:hover {
+            background: linear-gradient(135deg, #218838, #1e7e34);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        /* 响应式处理 */
+        @media (max-width: 768px) {
+            .chat-container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .chat-main {
+                height: 60vh;
+            }
+            
+            .chat-messages {
+                max-height: 50vh;
+                padding: 0.5rem;
+            }
+            
+            .monitor-panel {
+                height: 40vh;
+                border-left: none;
+                border-top: 1px solid #dee2e6;
+            }
+            
+            .message-bubble {
+                max-width: 85%;
+                font-size: 0.85rem;
+                padding: 0.4rem 0.6rem;
+            }
+            
+            .message-header {
+                font-size: 0.7rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .message-bubble {
+                max-width: 95%;
+                font-size: 0.8rem;
+            }
+            
+            .chat-messages {
+                padding: 0.25rem;
+            }
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        .typing-cursor {
+            color: #007bff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- 顶部导航栏 -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">
+                    <i class="bi bi-robot"></i>
+                    Manus AI
+                </a>
+                <div class="navbar-nav me-auto">
+                    <span class="navbar-text">
+                        <i class="bi bi-person-circle"></i>
+                        用户: {{ user_id }}
+                    </span>
+                </div>
+                <div class="navbar-nav">
+                    <span class="navbar-text">
+                        <span class="status-indicator" id="connectionStatus"></span>
+                        <span id="connectionText">连接中...</span>
+                    </span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主要聊天界面 -->
+        <div class="row chat-container">
+            <!-- 左侧聊天区域 -->
+            <div class="col-lg-8 p-0">
+                <div class="chat-main">
+                    <!-- 聊天消息区域 -->
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message system">
+                            <div class="message-bubble">
+                                <i class="bi bi-info-circle"></i>
+                                欢迎使用Manus AI系统！请输入您的任务需求。
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 输入正在输入指示器 -->
+                    <div class="typing-indicator" id="typingIndicator">
+                        <div class="message assistant">
+                            <div class="message-header">
+                                <i class="bi bi-robot"></i>
+                                <span>AI助手</span>
+                            </div>
+                            <div class="message-bubble">
+                                <div class="typing-dots">
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                </div>
+                                <span style="margin-left: 2rem; font-size: 0.85rem; color: #6c757d;">正在思考...</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 输入区域 -->
+                    <div class="chat-input">
+                        <form id="chatForm">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="messageInput" 
+                                       placeholder="请输入您的任务或问题..." required>
+                                <button class="btn btn-primary" type="submit" id="sendBtn">
+                                    <i class="bi bi-send"></i>
+                                    发送
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- 快速操作按钮 -->
+                        <div class="mt-2">
+                            <button class="btn btn-sm btn-outline-secondary me-2 quick-task" 
+                                    data-task="生成一个Python简单计算器程序,不允许追问">
+                                <i class="bi bi-code"></i> 代码生成
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary me-2 quick-task" 
+                                    data-task="搜索最新AI技术趋势,不允许追问">
+                                <i class="bi bi-search"></i> 信息搜索
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary me-2 quick-task" 
+                                    data-task="生成一张科技背景图片,不允许追问">
+                                <i class="bi bi-image"></i> 图像生成
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧监控面板 -->
+            <div class="col-lg-4 p-0">
+                <div class="monitor-panel">
+                    <!-- 任务状态面板 -->
+                    <div class="p-3 border-bottom">
+                        <h6 class="mb-2">
+                            <i class="bi bi-activity"></i>
+                            任务执行状态
+                        </h6>
+                        <div id="taskStatus">
+                            <div class="text-muted">
+                                <i class="bi bi-hourglass"></i>
+                                等待任务输入...
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 任务进度 -->
+                    <div class="p-3 border-bottom">
+                        <h6 class="mb-2">
+                            <i class="bi bi-list-check"></i>
+                            执行步骤
+                        </h6>
+                        
+                        <!-- 执行状态总览 -->
+                        <div class="execution-summary" id="executionSummary" style="display: none;">
+                            <div class="summary-header">
+                                <i class="bi bi-graph-up me-2"></i>
+                                <span>执行进度总览</span>
+                            </div>
+                            <div class="summary-progress" id="progressBar"></div>
+                            <div class="summary-stats" id="progressStats">
+                                <span>已完成: 0</span>
+                                <span>进行中: 0</span>
+                                <span>待执行: 0</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 流程树 -->
+                        <div class="process-tree" id="taskSteps">
+                            <div class="text-muted text-center">
+                                <i class="bi bi-hourglass-split me-2"></i>
+                                正在分析任务...
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 生成文件 -->
+                    <div class="p-3 border-bottom">
+                        <h6 class="mb-2">
+                            <i class="bi bi-file-earmark"></i>
+                            生成文件
+                        </h6>
+                        <div id="generatedFiles">
+                            <div class="text-muted text-center">
+                                暂无生成文件
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 实时日志 -->
+                    <div class="p-3 flex-fill d-flex flex-column">
+                        <h6 class="mb-2">
+                            <i class="bi bi-terminal"></i>
+                            实时日志
+                        </h6>
+                        <div class="monitor-log flex-fill" id="monitorLog">
+                            > Manus AI System 已启动<br>
+                            > WebSocket 连接建立中...<br>
+                            > 等待用户输入任务<br>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        const userId = "{{ user_id }}";
+        const sessionId = "{{ session_id }}";
+        let websocket = null;
+        let isConnected = false;
+        let currentTaskId = null;
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+        
+        // 初始化应用
+        function initializeApp() {
+            console.log('初始化Manus AI系统...');
+            connectWebSocket();
+            setupEventListeners();
+            
+            // 检查URL参数中的预设任务
+            const urlParams = new URLSearchParams(window.location.search);
+            const task = urlParams.get('task');
+            if (task) {
+                document.getElementById('messageInput').value = decodeURIComponent(task);
+                // 延迟自动发送
+                setTimeout(() => {
+                    if (isConnected) {
+                        submitMessage();
+                    }
+                }, 1000);
+            }
+        }
+        
+        // 建立WebSocket连接
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/${encodeURIComponent(userId)}`;
+            
+            console.log('连接WebSocket:', wsUrl);
+            websocket = new WebSocket(wsUrl);
+            
+            websocket.onopen = function(event) {
+                isConnected = true;
+                updateConnectionStatus('online', '已连接');
+                addLogMessage('> 🔗 WebSocket 连接已建立');
+                console.log('WebSocket连接成功');
+            };
+            
+            websocket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                console.log('收到WebSocket消息:', data);
+                handleWebSocketMessage(data);
+            };
+            
+            websocket.onclose = function(event) {
+                isConnected = false;
+                updateConnectionStatus('offline', '连接断开');
+                addLogMessage('> 🔗 WebSocket 连接已断开，5秒后重连...');
+                console.log('WebSocket连接断开');
+                
+                // 5秒后尝试重连
+                setTimeout(connectWebSocket, 5000);
+            };
+            
+            websocket.onerror = function(error) {
+                console.error('WebSocket错误:', error);
+                updateConnectionStatus('offline', '连接错误');
+                addLogMessage('> ❌ WebSocket 连接错误');
+            };
+        }
+        
+        // 处理WebSocket消息
+        function handleWebSocketMessage(data) {
+            console.log('🔄 处理WebSocket消息:', data.type, data);
+            
+            switch(data.type) {
+                case 'system':
+                    addSystemMessage(data.message);
+                    addLogMessage(`> 系统: ${data.message}`);
+                    break;
+                    
+                case 'new_message':
+                    addMessage(data.message);
+                    break;
+                    
+                case 'stream_output':
+                    // 处理流式输出消息
+                    addStreamOutput(data.message);
+                    // 完全不在实时日志中记录流式输出内容
+                    break;
+                    
+                case 'task_start':
+                    finishStreamOutput(); // 完成之前的流式输出
+                    showTypingIndicator();
+                    updateTaskStatus('分析中', 'warning');
+                    addLogMessage('> 📋 任务开始执行');
+                    // 重置步骤显示
+                    resetTaskSteps();
+                    break;
+                    
+                case 'task_progress':
+                    updateTaskStatus(data.message, 'info');
+                    // 只记录特定阶段的进度，避免与detailed_progress重复
+                    if (data.stage && ['executing', 'collecting'].includes(data.stage)) {
+                        addLogMessage(`> 📊 ${data.message}`);
+                    }
+                    if (data.stage) {
+                        updateTaskStage(data.stage);
+                    }
+                    break;
+                
+                case 'detailed_progress':
+                    // 处理详细进度事件（高优先级处理）
+                    console.log('🎯 详细进度事件:', data.event_type, data.data);
+                    handleDetailedProgress(data);
+                    // 只为关键事件添加日志，避免重复
+                    const keyEvents = [
+                        'task_analysis_start', 
+                        'plan_generation_start', 
+                        'task_start', 
+                        'step_start',
+                        'result_collection_start',
+                        'report_generation_start'
+                    ];
+                    if (keyEvents.includes(data.event_type)) {
+                        const message = data.data.message || data.stage || data.event_type;
+                        addLogMessage(`> 🎯 ${message}`);
+                    }
+                    // 立即强制UI更新
+                    forceUIUpdate();
+                    break;
+                    
+                case 'task_complete':
+                    console.log('任务完成，数据:', data);
+                    finishStreamOutput(); // 完成流式输出
+                    hideTypingIndicator();
+                    updateTaskStatus('任务完成', 'success');
+                    addLogMessage('> ✅ 任务执行完成');
+                    
+                    // 保存task_id
+                    if (data.task_id) {
+                        currentTaskId = data.task_id;
+                        console.log('保存当前任务ID:', currentTaskId);
+                    }
+                    
+                    // 处理文件显示
+                    handleTaskFiles(data);
+                    break;
+                    
+                case 'error':
+                    finishStreamOutput(); // 完成流式输出
+                    hideTypingIndicator();
+                    updateTaskStatus('执行失败', 'danger');
+                    addLogMessage(`> ❌ 错误: ${data.message}`);
+                    break;
+                    
+                case 'chat_history':
+                    loadChatHistory(data.messages);
+                    addLogMessage(`> 📚 加载历史记录 ${data.showing_recent}/${data.total_messages} 条`);
+                    break;
+                    
+                case 'pong':
+                    // 心跳响应
+                    console.log('📡 收到心跳响应');
+                    break;
+                    
+                default:
+                    console.log('❓ 未知消息类型:', data.type, data);
+            }
+        }
+        
+        // 处理流式输出的全局变量
+        let currentStreamMessage = null;
+        let streamAccumulator = '';
+        let streamStartTime = null;
+        
+        // 添加流式输出到聊天区域
+        function addStreamOutput(content) {
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            // 如果没有当前的流式消息，创建一个新的
+            if (!currentStreamMessage) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message assistant';
+                messageDiv.innerHTML = `
+                    <div class="message-header">
+                        <i class="bi bi-robot"></i>
+                        <span>AI助手</span>
+                        <span class="ms-auto">${new Date().toLocaleTimeString()}</span>
+                    </div>
+                    <div class="message-bubble">
+                        <div class="message-content stream-content"></div>
+                    </div>
+                `;
+                messagesContainer.appendChild(messageDiv);
+                currentStreamMessage = messageDiv.querySelector('.stream-content');
+                streamAccumulator = '';
+                streamStartTime = Date.now();
+                
+                // 只在开始流式输出时记录一次简洁的日志
+                addLogMessage('> 🤖 AI正在回复...');
+            }
+            
+            // 累积内容
+            streamAccumulator += content;
+            
+            // 检查是否包含图表HTML内容
+            if (streamAccumulator.includes('plotly') || streamAccumulator.includes('<!DOCTYPE html>')) {
+                // 如果是图表HTML内容，直接使用iframe显示
+                if (streamAccumulator.trim().startsWith('<!DOCTYPE html>') || streamAccumulator.trim().startsWith('<html')) {
+                    const iframe = document.createElement('iframe');
+                    iframe.style.width = '100%';
+                    iframe.style.height = '500px';
+                    iframe.style.border = '1px solid #ddd';
+                    iframe.style.borderRadius = '8px';
+                    iframe.srcdoc = streamAccumulator;
+                    
+                    const container = document.createElement('div');
+                    container.className = 'chart-container mb-3';
+                    container.appendChild(iframe);
+                    
+                    const caption = document.createElement('div');
+                    caption.className = 'text-muted small text-center mt-2';
+                    caption.innerHTML = '<i class="bi bi-bar-chart"></i> 交互式图表';
+                    container.appendChild(caption);
+                    
+                    currentStreamMessage.innerHTML = container.outerHTML;
+                } else {
+                    // 更新显示内容，应用基本格式化
+                    const formattedContent = formatMessageContent(streamAccumulator);
+                    currentStreamMessage.innerHTML = formattedContent;
+                }
+            } else {
+                // 更新显示内容，应用基本格式化
+                const formattedContent = formatMessageContent(streamAccumulator);
+                currentStreamMessage.innerHTML = formattedContent;
+            }
+            
+            // 自动滚动到底部
+            scrollToBottom();
+        }
+        
+        // 完成流式输出
+        function finishStreamOutput() {
+            if (currentStreamMessage) {
+                // 添加完成样式
+                currentStreamMessage.style.animation = 'fadeIn 0.3s ease-in';
+                
+                // 记录简洁的完成日志
+                if (streamStartTime) {
+                    const duration = ((Date.now() - streamStartTime) / 1000).toFixed(1);
+                    addLogMessage(`> ✅ AI回复完成 (${duration}秒)`);
+                }
+                
+                currentStreamMessage = null;
+                streamAccumulator = '';
+                streamStartTime = null;
+            }
+        }
+        
+        // 强制UI更新
+        function forceUIUpdate() {
+            // 强制重绘
+            document.getElementById('taskSteps').offsetHeight;
+        }
+        
+        // 处理详细进度事件
+        function handleDetailedProgress(data) {
+            const eventType = data.event_type;
+            const eventData = data.data || {};
+            const message = eventData.message || data.stage || '';
+            
+            console.log('🎯 处理详细进度:', eventType, message);
+            
+            // 根据事件类型处理不同的进度更新
+            switch(eventType) {
+                case 'task_analysis_start':
+                    clearAndAddStep('任务分析', '开始分析用户需求...', 'running');
+                    break;
+                    
+                case 'clarity_check_start':
+                    addProcessNode('明确度检查', '检查任务明确度...', 'running', true);
+                    break;
+                    
+                case 'clarity_score':
+                    const score = eventData.score || 0;
+                    const needsClarification = eventData.needs_clarification || false;
+                    const status = needsClarification ? 'warning' : 'completed';
+                    updateProcessNode('明确度检查', `明确度评分: ${(score * 100).toFixed(0)}%`, status);
+                    break;
+                    
+                case 'plan_generation_start':
+                    addProcessNode('计划生成', '开始生成执行计划...', 'running');
+                    break;
+                    
+                case 'plan_step_generated':
+                    const stepIndex = eventData.step_index || 0;
+                    const totalSteps = eventData.total_steps || 0;
+                    const stepDesc = eventData.step_description || '';
+                    addSubStep('计划生成', `步骤 ${stepIndex + 1}/${totalSteps}: ${stepDesc}`, 'completed');
+                    break;
+                    
+                case 'plan_generated':
+                    const planSteps = eventData.total_steps || 0;
+                    updateProcessNode('计划生成', `执行计划生成完成，共 ${planSteps} 个步骤`, 'completed');
+                    break;
+                    
+                case 'task_start':
+                    addProcessNode('任务执行', '开始执行任务...', 'running');
+                    break;
+                    
+                case 'step_start':
+                    const toolName = eventData.tool_name || '';
+                    const description = eventData.description || message;
+                    addSubStep('任务执行', `${description} (工具: ${toolName})`, 'running');
+                    break;
+                    
+                case 'step_complete':
+                    const stepStatus = eventData.status === 'completed' ? 'completed' : 'failed';
+                    // 更新最后一个子步骤的状态
+                    // 这里简化处理，实际可以记录子步骤ID来精确更新
+                    break;
+                    
+                case 'result_collection_start':
+                    addProcessNode('结果收集', '开始收集执行结果...', 'running');
+                    break;
+                    
+                case 'report_generation_start':
+                    const formats = eventData.formats || [];
+                    updateProcessNode('结果收集', `生成执行报告 (${formats.join(', ')})...`, 'running');
+                    break;
+                    
+                case 'report_saved':
+                    const format = eventData.format || '';
+                    addSubStep('结果收集', `${format.toUpperCase()} 报告已保存`, 'completed');
+                    break;
+                    
+                case 'general_progress':
+                    // 通用进度处理
+                    if (eventData.stage === 'plan_validation') {
+                        addSubStep('计划生成', '验证计划中的工具可用性...', 'completed');
+                    }
+                    break;
+                    
+                default:
+                    console.log('❓ 未处理的详细进度事件:', eventType);
+            }
+        }
+        
+        // 重置任务步骤显示
+        function resetTaskSteps() {
+            const stepsDiv = document.getElementById('taskSteps');
+            const summaryDiv = document.getElementById('executionSummary');
+            
+            stepsDiv.innerHTML = `
+                <div class="text-muted text-center">
+                    <i class="bi bi-hourglass-split me-2"></i>
+                    正在分析任务...
+                </div>
+            `;
+            summaryDiv.style.display = 'none';
+            console.log('🔄 重置任务步骤显示');
+        }
+        
+        // 流程节点管理
+        let processNodes = {};
+        let currentStepCounts = {
+            completed: 0,
+            running: 0,
+            pending: 0,
+            warning: 0,
+            failed: 0
+        };
+        
+        // 清空并添加第一个步骤
+        function clearAndAddStep(category, description, status) {
+            const stepsDiv = document.getElementById('taskSteps');
+            stepsDiv.innerHTML = ''; // 清空现有内容
+            processNodes = {}; // 重置节点记录
+            currentStepCounts = { completed: 0, running: 0, pending: 0, warning: 0, failed: 0 };
+            
+            addProcessNode(category, description, status);
+            showExecutionSummary();
+            console.log(`🔄 清空并添加第一个步骤: ${category} - ${description}`);
+        }
+        
+        // 添加流程节点
+        function addProcessNode(category, description, status, isSubStep = false) {
+            const stepsDiv = document.getElementById('taskSteps');
+            
+            if (!processNodes[category]) {
+                // 创建主节点
+                const nodeId = `node-${Object.keys(processNodes).length}`;
+                processNodes[category] = {
+                    id: nodeId,
+                    element: null,
+                    subSteps: [],
+                    status: status,
+                    startTime: new Date()
+                };
+                
+                const nodeElement = document.createElement('div');
+                nodeElement.className = `process-node ${status}`;
+                nodeElement.id = nodeId;
+                
+                // 获取分类图标
+                const categoryIcon = getCategoryIcon(category);
+                
+                nodeElement.innerHTML = `
+                    <div class="process-connector"></div>
+                    <div class="process-header">
+                        <div class="process-icon">${categoryIcon}</div>
+                        <div class="process-title">${category}</div>
+                        <div class="process-time">${new Date().toLocaleTimeString()}</div>
+                    </div>
+                    <div class="process-details">${description}</div>
+                    <div class="sub-steps" id="sub-${nodeId}"></div>
+                `;
+                
+                stepsDiv.appendChild(nodeElement);
+                processNodes[category].element = nodeElement;
+                
+                updateStepCounts(status, 'add');
+                console.log(`➕ 创建流程节点: ${category}`);
+            } else if (isSubStep) {
+                // 添加子步骤
+                addSubStep(category, description, status);
+            } else {
+                // 更新主节点
+                updateProcessNode(category, description, status);
+            }
+            
+            updateProgressBar();
+            scrollToLatestStep();
+        }
+        
+        // 添加子步骤
+        function addSubStep(category, description, status) {
+            const node = processNodes[category];
+            if (!node) return;
+            
+            const subStepsContainer = document.getElementById(`sub-${node.id}`);
+            const subStepElement = document.createElement('div');
+            subStepElement.className = `sub-step ${status}`;
+            
+            const stepIcon = getStatusIcon(status);
+            
+            subStepElement.innerHTML = `
+                <div class="sub-step-content">
+                    <span class="sub-step-icon">${stepIcon}</span>
+                    <span class="sub-step-text">${description}</span>
+                    <span class="sub-step-time">${new Date().toLocaleTimeString()}</span>
+                </div>
+            `;
+            
+            subStepsContainer.appendChild(subStepElement);
+            node.subSteps.push({ element: subStepElement, status: status });
+            
+            console.log(`📝 添加子步骤: [${category}] ${description} (${status})`);
+            
+            // 滚动到最新子步骤
+            setTimeout(() => {
+                subStepElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 50);
+        }
+        
+        // 更新流程节点
+        function updateProcessNode(category, description, newStatus) {
+            const node = processNodes[category];
+            if (!node) {
+                addProcessNode(category, description, newStatus);
+                return;
+            }
+            
+            // 更新计数
+            updateStepCounts(node.status, 'remove');
+            updateStepCounts(newStatus, 'add');
+            
+            // 更新节点状态
+            node.status = newStatus;
+            node.element.className = `process-node ${newStatus}`;
+            
+            // 更新描述
+            const detailsElement = node.element.querySelector('.process-details');
+            detailsElement.textContent = description;
+            
+            // 更新时间
+            const timeElement = node.element.querySelector('.process-time');
+            timeElement.textContent = new Date().toLocaleTimeString();
+            
+            // 更新图标
+            const iconElement = node.element.querySelector('.process-icon');
+            iconElement.innerHTML = getCategoryIcon(category);
+            
+            updateProgressBar();
+            console.log(`🔄 更新流程节点: [${category}] ${description} (${newStatus})`);
+            
+            // 滚动到更新的节点
+            setTimeout(() => {
+                node.element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 50);
+        }
+        
+        // 获取分类图标
+        function getCategoryIcon(category) {
+            const icons = {
+                '任务分析': '🔍',
+                '明确度检查': '📊',
+                '计划生成': '⚙️',
+                '任务执行': '🚀',
+                '步骤执行': '🔄',
+                '工具调用': '🔧',
+                '结果收集': '📥',
+                '报告生成': '📋',
+                '文件管理': '📄',
+                'clarification_needed': '❓',
+                'plan_validation': '✅',
+                '其他': '📡'
+            };
+            return icons[category] || '📌';
+        }
+        
+        // 获取状态图标
+        function getStatusIcon(status) {
+            const icons = {
+                'running': '🔄',
+                'completed': '✅',
+                'failed': '❌',
+                'warning': '⚠️',
+                'pending': '⏳'
+            };
+            return icons[status] || '📌';
+        }
+        
+        // 更新步骤计数
+        function updateStepCounts(status, action) {
+            if (action === 'add') {
+                currentStepCounts[status] = (currentStepCounts[status] || 0) + 1;
+            } else if (action === 'remove') {
+                currentStepCounts[status] = Math.max(0, (currentStepCounts[status] || 0) - 1);
+            }
+        }
+        
+        // 显示执行状态总览
+        function showExecutionSummary() {
+            const summaryDiv = document.getElementById('executionSummary');
+            summaryDiv.style.display = 'block';
+        }
+        
+        // 更新进度条
+        function updateProgressBar() {
+            const progressBar = document.getElementById('progressBar');
+            const progressStats = document.getElementById('progressStats');
+            
+            const total = Object.values(currentStepCounts).reduce((sum, count) => sum + count, 0);
+            if (total === 0) return;
+            
+            const completedPercent = (currentStepCounts.completed / total) * 100;
+            const runningPercent = (currentStepCounts.running / total) * 100;
+            const pendingPercent = (currentStepCounts.pending / total) * 100;
+            
+            progressBar.innerHTML = `
+                <div class="progress-segment completed" style="width: ${completedPercent}%"></div>
+                <div class="progress-segment running" style="width: ${runningPercent}%"></div>
+                <div class="progress-segment pending" style="width: ${pendingPercent}%"></div>
+            `;
+            
+            progressStats.innerHTML = `
+                <span>已完成: ${currentStepCounts.completed}</span>
+                <span>进行中: ${currentStepCounts.running}</span>
+                <span>总计: ${total}</span>
+            `;
+        }
+        
+        // 更新旧函数以兼容新系统
+        function addStepToCategory(category, description, status) {
+            addProcessNode(category, description, status, true);
+        }
+        
+        function updateStepInCategory(category, newDescription, newStatus) {
+            updateProcessNode(category, newDescription, newStatus);
+        }
+        
+        // 滚动到最新步骤
+        function scrollToLatestStep() {
+            const stepsDiv = document.getElementById('taskSteps');
+            if (stepsDiv) {
+                stepsDiv.scrollTop = stepsDiv.scrollHeight;
+            }
+        }
+        
+        // 处理任务文件
+        function handleTaskFiles(data) {
+            console.log('处理任务文件，数据:', data);
+            
+            let files = [];
+            let taskId = data.task_id || currentTaskId;
+            
+            // 优先使用files_summary
+            if (data.files_summary && data.files_summary.files) {
+                console.log('使用files_summary数据');
+                files = data.files_summary.files;
+                addLogMessage(`> 生成 ${data.files_summary.file_count || files.length} 个文件`);
+            } else if (data.files_generated && data.files_generated.length > 0) {
+                console.log('使用files_generated数据');
+                // 转换旧格式为新格式
+                files = data.files_generated.map(filePath => ({
+                    file_name: filePath.split('/').pop(),
+                    file_path: filePath,
+                    file_type: 'unknown',
+                    file_size: 0,
+                    task_id: taskId
+                }));
+                addLogMessage(`> 生成 ${files.length} 个文件`);
+            }
+            
+            if (files.length > 0) {
+                console.log('显示文件列表:', files);
+                displayFiles(files, taskId);
+            } else {
+                console.log('没有文件可显示');
+                updateGeneratedFiles([], null);
+            }
+        }
+        
+        // 显示文件列表
+        function displayFiles(files, taskId) {
+            console.log('displayFiles调用:', { files, taskId });
+            
+            const filesDiv = document.getElementById('generatedFiles');
+            
+            if (!files || files.length === 0) {
+                filesDiv.innerHTML = '<div class="text-muted text-center">暂无生成文件</div>';
+                return;
+            }
+            
+            let filesHtml = '';
+            
+            files.forEach((file, index) => {
+                const fileName = file.file_name || file.name || `文件${index + 1}`;
+                const filePath = file.file_path || file.path || '';
+                const fileSize = file.file_size || file.size || 0;
+                const fileType = (file.file_type || file.type || 'unknown').toLowerCase();
+                
+                // 为文件添加task_id信息
+                const fileTaskId = file.task_id || taskId;
+                
+                // 文件图标
+                let iconClass = 'bi-file-earmark';
+                let iconColor = '#007bff';
+                
+                if (['py', 'js', 'html', 'css', 'json'].includes(fileType)) {
+                    iconClass = 'bi-file-earmark-code';
+                    iconColor = '#6f42c1';
+                } else if (['txt', 'md'].includes(fileType)) {
+                    iconClass = 'bi-file-earmark-text';
+                    iconColor = '#17a2b8';
+                } else if (['png', 'jpg', 'jpeg', 'gif'].includes(fileType)) {
+                    iconClass = 'bi-file-earmark-image';
+                    iconColor = '#fd7e14';
+                } else if (['pdf'].includes(fileType)) {
+                    iconClass = 'bi-file-earmark-pdf';
+                    iconColor = '#dc3545';
+                }
+                
+                // 格式化文件大小
+                const fileSizeText = formatFileSize(fileSize);
+                
+                // 决定使用哪种下载方式
+                let downloadAction = '';
+                if (fileTaskId && fileName) {
+                    // 优先使用task_id + filename的方式
+                    downloadAction = `downloadFileByTask('${fileTaskId}', '${fileName}')`;
+                } else if (filePath && filePath.trim() !== '') {
+                    // 备用：使用文件路径
+                    downloadAction = `downloadFile('${filePath}')`;
+                } else {
+                    // 无法下载
+                    downloadAction = `alert('文件无法下载：缺少必要信息')`;
+                }
+                
+                let previewAction = '';
+                if (['txt', 'md', 'py', 'js', 'html', 'css', 'json'].includes(fileType)) {
+                    if (fileTaskId && fileName) {
+                        previewAction = `previewFileByTask('${fileTaskId}', '${fileName}')`;
+                    } else if (filePath && filePath.trim() !== '') {
+                        previewAction = `previewFile('${filePath}', '${fileName}')`;
+                    }
+                }
+                
+                filesHtml += `
+                    <div class="file-item d-flex align-items-center">
+                        <div class="file-icon" style="background-color: ${iconColor}">
+                            <i class="bi ${iconClass}"></i>
+                        </div>
+                        <div class="file-info">
+                            <div class="file-name">${fileName}</div>
+                            <div class="file-meta">
+                                ${fileType.toUpperCase()} • ${fileSizeText}
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <button class="btn btn-sm btn-outline-primary" 
+                                    onclick="${downloadAction}" 
+                                    title="下载文件">
+                                <i class="bi bi-download"></i>
+                            </button>
+                            ${previewAction ? 
+                              `<button class="btn btn-sm btn-outline-secondary ms-1" 
+                                       onclick="${previewAction}" 
+                                       title="预览文件">
+                                   <i class="bi bi-eye"></i>
+                               </button>` : ''
+                            }
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // 添加下载包按钮
+            if (taskId && files.length > 1) {
+                filesHtml += `
+                    <button class="download-package" onclick="downloadTaskPackage('${taskId}')">
+                        <i class="bi bi-archive me-2"></i>
+                        下载文件包 (${files.length} 个文件)
+                    </button>
+                `;
+            }
+            
+            filesDiv.innerHTML = filesHtml;
+            console.log('文件列表HTML已更新');
+        }
+        
+        // 更新生成文件（保持兼容性）
+        function updateGeneratedFiles(files, taskId) {
+            displayFiles(files, taskId);
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 聊天表单提交
+            document.getElementById('chatForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitMessage();
+            });
+            
+            // 快速任务按钮
+            document.querySelectorAll('.quick-task').forEach(button => {
+                button.addEventListener('click', function() {
+                    const task = this.getAttribute('data-task');
+                    document.getElementById('messageInput').value = task;
+                    submitMessage();
+                });
+            });
+            
+            // 回车键发送消息
+            document.getElementById('messageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    submitMessage();
+                }
+            });
+        }
+        
+        // 提交消息
+        function submitMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message || !isConnected) {
+                console.log('消息为空或未连接，跳过发送');
+                return;
+            }
+            
+            console.log('发送消息:', message);
+            addLogMessage(`> 💬 用户: ${message.length > 20 ? message.substring(0, 20) + '...' : message}`);
+            
+            // 清空之前的任务步骤显示
+            const stepsDiv = document.getElementById('taskSteps');
+            stepsDiv.innerHTML = '<div class="text-muted text-center">正在分析任务...</div>';
+            
+            // 通过WebSocket发送消息
+            websocket.send(JSON.stringify({
+                type: 'task_submit',
+                content: message
+            }));
+            
+            input.value = '';
+            document.getElementById('sendBtn').disabled = true;
+            
+            // 3秒后恢复发送按钮
+            setTimeout(() => {
+                document.getElementById('sendBtn').disabled = false;
+            }, 3000);
+        }
+        
+        // 添加消息到聊天区域
+        function addMessage(message) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${message.sender}`;
+            
+            let iconClass = '';
+            let senderName = '';
+            if (message.sender === 'user') {
+                iconClass = 'bi bi-person-circle';
+                senderName = '您';
+            } else if (message.sender === 'assistant') {
+                iconClass = 'bi bi-robot';
+                senderName = 'AI助手';
+            }
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <i class="${iconClass}"></i>
+                    <span>${senderName}</span>
+                    <span class="ms-auto">${new Date(message.timestamp).toLocaleTimeString()}</span>
+                </div>
+                <div class="message-bubble">
+                    <div class="message-content"></div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            
+            // 如果是助手消息，使用流式输出
+            if (message.sender === 'assistant') {
+                typewriterEffect(messageDiv.querySelector('.message-content'), message.content);
+            } else {
+                // 用户消息直接显示
+                messageDiv.querySelector('.message-content').innerHTML = formatMessageContent(message.content);
+            }
+            
+            scrollToBottom();
+        }
+        
+        // 打字机效果函数（优化版）
+        function typewriterEffect(element, text, baseSpeed = 25) {
+            const formattedText = formatMessageContent(text);
+            
+            // 创建一个临时元素来解析HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = formattedText;
+            
+            // 提取纯文本内容用于打字机效果
+            const plainText = tempDiv.textContent || tempDiv.innerText || '';
+            
+            // 根据文本长度调整基础速度
+            let speed = baseSpeed;
+            if (plainText.length > 500) {
+                speed = Math.max(15, baseSpeed - 10); // 长文本更快
+            } else if (plainText.length > 200) {
+                speed = Math.max(20, baseSpeed - 5); // 中等长度稍快
+            }
+            
+            element.innerHTML = '';
+            let index = 0;
+            let isPaused = false;
+            
+            // 显示光标
+            const cursor = document.createElement('span');
+            cursor.className = 'typing-cursor';
+            cursor.textContent = '▊';
+            cursor.style.animation = 'blink 1s infinite';
+            element.appendChild(cursor);
+            
+            // 添加跳过按钮（长文本时）
+            let skipButton = null;
+            if (plainText.length > 100) {
+                skipButton = document.createElement('button');
+                skipButton.className = 'btn btn-sm btn-outline-secondary ms-2 skip-typing';
+                skipButton.innerHTML = '<i class="bi bi-fast-forward"></i> 跳过';
+                skipButton.style.position = 'relative';
+                skipButton.style.fontSize = '0.7rem';
+                skipButton.onclick = () => {
+                    skipToEnd();
+                };
+                element.parentNode.appendChild(skipButton);
+            }
+            
+            function skipToEnd() {
+                isPaused = true;
+                if (cursor.parentNode) {
+                    cursor.remove();
+                }
+                if (skipButton && skipButton.parentNode) {
+                    skipButton.remove();
+                }
+                element.innerHTML = formattedText;
+                scrollToBottom();
+            }
+            
+            function typeChar() {
+                if (isPaused) return;
+                
+                if (index < plainText.length) {
+                    // 移除光标
+                    if (cursor.parentNode) {
+                        cursor.remove();
+                    }
+                    
+                    // 添加字符
+                    const currentText = plainText.slice(0, index + 1);
+                    element.textContent = currentText;
+                    
+                    // 重新添加光标
+                    element.appendChild(cursor);
+                    
+                    index++;
+                    
+                    // 智能速度控制
+                    let charSpeed = speed;
+                    const currentChar = plainText[index - 1];
+                    
+                    // 标点符号后的停顿
+                    if (currentChar === '。' || currentChar === '！' || currentChar === '？' || currentChar === '.' || currentChar === '!' || currentChar === '?') {
+                        charSpeed = speed * 4; // 句号后停顿
+                    } else if (currentChar === '，' || currentChar === '；' || currentChar === ',' || currentChar === ';' || currentChar === '：' || currentChar === ':') {
+                        charSpeed = speed * 2.5; // 逗号、分号、冒号后稍停顿
+                    } else if (currentChar === '\n') {
+                        charSpeed = speed * 3; // 换行后停顿
+                    } else if (currentChar === ' ') {
+                        charSpeed = speed * 0.3; // 空格快速
+                    } else if (/[a-zA-Z0-9]/.test(currentChar)) {
+                        charSpeed = speed * 0.8; // 英文数字稍快
+                    }
+                    
+                    // 随机变化，更自然
+                    charSpeed = charSpeed * (0.8 + Math.random() * 0.4);
+                    
+                    setTimeout(typeChar, charSpeed);
+                    
+                    // 每10个字符滚动一次，避免过于频繁
+                    if (index % 10 === 0) {
+                        scrollToBottom();
+                    }
+                } else {
+                    // 打字完成
+                    isPaused = true;
+                    if (cursor.parentNode) {
+                        cursor.remove();
+                    }
+                    if (skipButton && skipButton.parentNode) {
+                        skipButton.remove();
+                    }
+                    element.innerHTML = formattedText;
+                    scrollToBottom();
+                    
+                    // 完成动画效果
+                    element.style.animation = 'fadeIn 0.3s ease-in';
+                }
+            }
+            
+            // 开始打字效果
+            setTimeout(typeChar, 200);
+        }
+        
+        // 添加完成动画CSS
+        const additionalStyle = document.createElement('style');
+        additionalStyle.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0.8; }
+                to { opacity: 1; }
+            }
+            .skip-typing {
+                animation: slideIn 0.3s ease-out;
+            }
+            @keyframes slideIn {
+                from { 
+                    opacity: 0;
+                    transform: translateX(10px);
+                }
+                to { 
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+        `;
+        document.head.appendChild(additionalStyle);
+        
+        // 添加系统消息
+        function addSystemMessage(message) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message system';
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    <i class="bi bi-info-circle me-1"></i>
+                    <span class="system-content"></span>
+                </div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+            
+            // 系统消息也使用轻微的打字效果
+            const contentElement = messageDiv.querySelector('.system-content');
+            typewriterEffect(contentElement, message, 15); // 更快的速度
+            
+            scrollToBottom();
+        }
+        
+        // 格式化消息内容
+        function formatMessageContent(content) {
+            // 检查是否包含图表HTML内容
+            if (typeof content === 'string' && (content.includes('plotly') || content.includes('<!DOCTYPE html>'))) {
+                // 如果是完整的HTML文档，创建iframe显示
+                if (content.trim().startsWith('<!DOCTYPE html>') || content.trim().startsWith('<html')) {
+                    const iframe = document.createElement('iframe');
+                    iframe.style.width = '100%';
+                    iframe.style.height = '500px';
+                    iframe.style.border = '1px solid #ddd';
+                    iframe.style.borderRadius = '8px';
+                    iframe.srcdoc = content;
+                    
+                    const container = document.createElement('div');
+                    container.className = 'chart-container mb-3';
+                    container.appendChild(iframe);
+                    
+                    const caption = document.createElement('div');
+                    caption.className = 'text-muted small text-center mt-2';
+                    caption.innerHTML = '<i class="bi bi-bar-chart"></i> 交互式图表';
+                    container.appendChild(caption);
+                    
+                    return container.outerHTML;
+                }
+            }
+            
+            // 处理换行符
+            content = content.replace(/\n/g, '<br>');
+            
+            // 处理代码块
+            content = content.replace(/```(.*?)```/gs, '<pre class="bg-light p-2 rounded"><code>$1</code></pre>');
+            
+            // 处理行内代码
+            content = content.replace(/`([^`]+)`/g, '<code class="bg-light px-1 rounded">$1</code>');
+            
+            return content;
+        }
+        
+        // 显示/隐藏输入指示器（优化版）
+        function showTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            indicator.style.display = 'block';
+            
+            // 添加渐现效果
+            indicator.style.opacity = '0';
+            indicator.style.transform = 'translateY(10px)';
+            
+            setTimeout(() => {
+                indicator.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                indicator.style.opacity = '1';
+                indicator.style.transform = 'translateY(0)';
+            }, 50);
+            
+            scrollToBottom();
+        }
+        
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            
+            indicator.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            indicator.style.opacity = '0';
+            indicator.style.transform = 'translateY(-10px)';
+            
+            setTimeout(() => {
+                indicator.style.display = 'none';
+                indicator.style.transition = '';
+                indicator.style.transform = '';
+            }, 300);
+        }
+        
+        // 更新连接状态
+        function updateConnectionStatus(status, text) {
+            const indicator = document.getElementById('connectionStatus');
+            const textElement = document.getElementById('connectionText');
+            
+            indicator.className = `status-indicator status-${status}`;
+            textElement.textContent = text;
+        }
+        
+        // 更新任务状态
+        function updateTaskStatus(message, type) {
+            const statusDiv = document.getElementById('taskStatus');
+            const colorClass = {
+                'info': 'text-info',
+                'warning': 'text-warning', 
+                'success': 'text-success',
+                'danger': 'text-danger'
+            }[type] || 'text-muted';
+            
+            statusDiv.innerHTML = `
+                <div class="${colorClass}">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'danger' ? 'x-circle' : 'hourglass'}"></i>
+                    ${message}
+                </div>
+            `;
+        }
+        
+        // 更新任务步骤
+        function updateTaskStage(stage) {
+            const stepsDiv = document.getElementById('taskSteps');
+            
+            const stages = {
+                'analyzing': '任务分析',
+                'planning': '制定计划', 
+                'executing': '执行任务',
+                'collecting': '收集结果'
+            };
+            
+            const stageNames = Object.values(stages);
+            const currentIndex = Object.keys(stages).indexOf(stage);
+            
+            let stepsHtml = '';
+            stageNames.forEach((name, index) => {
+                let className = 'step-item';
+                if (index < currentIndex) {
+                    className += ' completed';
+                } else if (index === currentIndex) {
+                    className += ' running';
+                }
+                
+                stepsHtml += `
+                    <div class="${className}">
+                        <small>${name}</small>
+                    </div>
+                `;
+            });
+            
+            stepsDiv.innerHTML = stepsHtml;
+        }
+        
+        // 添加日志消息
+        function addLogMessage(message) {
+            const logDiv = document.getElementById('monitorLog');
+            const time = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${time}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+        
+        // 下载文件（通过task_id和文件名）
+        function downloadFileByTask(taskId, fileName) {
+            try {
+                console.log('下载文件（通过任务）:', taskId, fileName);
+                const downloadUrl = `/api/download_by_task/${taskId}/${encodeURIComponent(fileName)}`;
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                addLogMessage(`> 📁 下载: ${fileName}`);
+                
+            } catch (error) {
+                console.error('下载文件失败:', error);
+                addLogMessage(`> ❌ 下载失败: ${fileName}`);
+            }
+        }
+        
+        // 下载文件（原有方法，保持兼容性）
+        function downloadFile(filePath) {
+            try {
+                console.log('下载文件:', filePath);
+                const downloadUrl = `/api/download/${encodeURIComponent(filePath)}`;
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = filePath.split('/').pop();
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                addLogMessage(`> 📁 下载: ${filePath.split('/').pop()}`);
+                
+            } catch (error) {
+                console.error('下载文件失败:', error);
+                addLogMessage(`> ❌ 下载失败: ${filePath.split('/').pop()}`);
+            }
+        }
+        
+        // 预览文件（通过task_id和文件名）
+        function previewFileByTask(taskId, fileName) {
+            try {
+                console.log('预览文件（通过任务）:', taskId, fileName);
+                addLogMessage(`> 👁️ 预览: ${fileName}`);
+                fetch(`/api/download_by_task/${taskId}/${encodeURIComponent(fileName)}`)
+                    .then(response => response.text())
+                    .then(content => {
+                        showFilePreviewModal(fileName, content, null, taskId);
+                    })
+                    .catch(error => {
+                        console.error('预览文件失败:', error);
+                        addLogMessage(`> ❌ 预览失败: ${fileName}`);
+                    });
+                    
+            } catch (error) {
+                console.error('预览文件失败:', error);
+                addLogMessage(`> ❌ 预览失败: ${fileName}`);
+            }
+        }
+        
+        // 预览文件（原有方法，保持兼容性）
+        function previewFile(filePath, fileName) {
+            try {
+                console.log('预览文件:', filePath);
+                addLogMessage(`> 👁️ 预览: ${fileName}`);
+                fetch(`/api/download/${encodeURIComponent(filePath)}`)
+                    .then(response => response.text())
+                    .then(content => {
+                        showFilePreviewModal(fileName, content, filePath);
+                    })
+                    .catch(error => {
+                        console.error('预览文件失败:', error);
+                        addLogMessage(`> ❌ 预览失败: ${fileName}`);
+                    });
+                    
+            } catch (error) {
+                console.error('预览文件失败:', error);
+                addLogMessage(`> ❌ 预览失败: ${fileName}`);
+            }
+        }
+        
+        // 显示文件预览模态框
+        function showFilePreviewModal(fileName, content, filePath, taskId) {
+            // 决定下载方式
+            let downloadAction = '';
+            if (taskId && fileName) {
+                downloadAction = `downloadFileByTask('${taskId}', '${fileName}')`;
+            } else if (filePath) {
+                downloadAction = `downloadFile('${filePath}')`;
+            } else {
+                downloadAction = `alert('无法下载文件')`;
+            }
+            
+            const modalHtml = `
+                <div class="modal fade" id="filePreviewModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-file-earmark-text me-2"></i>
+                                    文件预览: ${fileName}
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <pre class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto; font-size: 0.8rem; white-space: pre-wrap;">${content}</pre>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" onclick="${downloadAction}">
+                                    <i class="bi bi-download me-1"></i>下载文件
+                                </button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 移除已存在的模态框
+            const existingModal = document.getElementById('filePreviewModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // 添加新模态框
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // 显示模态框
+            const modal = new bootstrap.Modal(document.getElementById('filePreviewModal'));
+            modal.show();
+        }
+        
+        // 下载任务文件包
+        function downloadTaskPackage(taskId) {
+            try {
+                console.log('下载文件包，taskId:', taskId);
+                const downloadUrl = `/api/files/download_package/${taskId}?user_id=${userId}`;
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = `task_${taskId}_files.zip`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                addLogMessage(`> 📦 下载文件包: task_${taskId}`);
+                
+            } catch (error) {
+                console.error('下载文件包失败:', error);
+                addLogMessage(`> ❌ 下载文件包失败: ${error.message}`);
+            }
+        }
+        
+        // 加载聊天历史
+        function loadChatHistory(messages) {
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            // 保留系统欢迎消息
+            const systemMsg = messagesContainer.querySelector('.message.system');
+            messagesContainer.innerHTML = '';
+            
+            if (systemMsg) {
+                messagesContainer.appendChild(systemMsg);
+            }
+            
+            // 添加历史消息
+            messages.forEach(msg => {
+                addMessage(msg);
+            });
+            
+            scrollToBottom();
+        }
+        
+        // 滚动到底部
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('chatMessages');
+            if (messagesContainer) {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+        
+        // 定时发送心跳
+        setInterval(() => {
+            if (isConnected && websocket) {
+                websocket.send(JSON.stringify({type: 'ping'}));
+            }
+        }, 30000);
+        
+        // 页面卸载时关闭WebSocket
+        window.addEventListener('beforeunload', function() {
+            if (websocket) {
+                websocket.close();
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,83 @@
+{
+  "task_info": {
+    "task_id": "9da36c00-881c-4c1e-8853-d66ec4939510",
+    "user_input": "搜索最新AI技术趋势,不允许追问",
+    "task_type": "信息检索",
+    "complexity_level": "simple",
+    "status": "completed"
+  },
+  "execution_summary": {
+    "success": true,
+    "execution_time": 2.2490904331207275,
+    "total_steps": 1,
+    "successful_steps": 1,
+    "failed_steps": 0,
+    "files_generated": [],
+    "error_message": null
+  },
+  "step_details": [
+    {
+      "step_id": "step_1",
+      "step_description": "使用web_search_tool搜索最新AI技术趋势",
+      "function_name": "web_search_tool",
+      "result": {
+        "query": "最新AI技术趋势",
+        "pages": [
+          {
+            "title": "《2024年人工智能十大前沿技术趋势展望》发布",
+            "url": "https://www.sogou.com/link?url=hedJjaC291M2aGci3nKgGVoov_MuMQYQm4A2cALZx3mdH_wiR3gg0DCOtfXmX3g95zWlsTGE_KM7v32jdELdRAwLKL07EiKrAX15_jkKSIIh5nxpDb3WRg..",
+            "content": "2024年11月15日-发布的十大前沿技术趋势分为AI共性技术、大规模预训练模型、具身智能和生成式人工智能四个类别，共包括小数据与优质数据、人机对齐、AI使用边界和伦理..."
+          },
+          {
+            "title": "科技前沿|细数AI最新进展及年度发展趋势",
+            "url": "http://mp.weixin.qq.com/s?src=11&timestamp=1749452796&ver=6041&signature=HtDZRLQPgMIEtVcC4-ZxHnwg-gtuW74pItUhTA95POemACVFOPGiPSwafO-YV33ztyV3Jzhpck1FrCvvyM*0YpDyam8im6SYNnVikSXUqMsB8eBwUG7K-4WMXECBX-oV&new=1",
+            "content": "2年前 - 新报告显示了 2022 年AI 行业的几个主要趋势:AI 在许多基准测试中继续发布最先进的结果,但在几个方面的同比改进微乎其微.此外,达到基准饱和的速度也在增加"
+          },
+          {
+            "title": "交互专业干货:人工智能AI最新8大趋势详解_知乎",
+            "url": "https://www.sogou.com/link?url=hedJjaC291OfPyaFZYFLI4KQWvqt63NBYvAG-S9kbEZYlp-Jdf1GEw..",
+            "content": "1 人工智能AI是通过模拟、延伸和扩展人类智能,产生具有类人智能的计算系统.伴随着互联网技术特别是大数据、云计算的深度发展,人工智能从长期的“不..."
+          },
+          {
+            "title": "2025年十大AI技术趋势,AGI时代的前沿探索_应用_工作_复杂数据",
+            "url": "https://www.sogou.com/link?url=hedJjaC291Ok-E9WTygIKqZt6DizBOEjRG2eDHNTftZe1QcrYPaA0rXc_rDfQZGT",
+            "content": "2025年1月9日- 根据北京智源人工智能研究院最新发布的《十大人工智能技术及应用趋势》报告，当前AI正处于一个重要的拐点。报告显示，具身智能、AI在科学研究中的应..."
+          },
+          {
+            "title": "2025年AI技术最新发展动向深度剖析 - 今日头条",
+            "url": "https://www.sogou.com/link?url=hedJjaC291PD0T3DYzJqFDoBhFbePHvernilvTOuwmlTALrO4_WgfoPdtDm3gpyckwNaz6Axdto.",
+            "content": "2025年2月13日- 众多关键AI技术趋势正引领着众多行业的革新。从生成式AI到多模态技术，从边缘计算到AI伦理，我们将依据近期主要AI会议和最新研究论文，深入剖析这..."
+          },
+          {
+            "title": "2024年十大AI发展趋势,8个已经应验。AI发展之快,大家有没有感受...",
+            "url": "https://www.sogou.com/link?url=hedJjaC291ObqPUCEo1zMuraEuczo-4WCU_PNz9JM0s2HYxHGdcAtJJlEZuDIwNh8x2NB-PRwZT6xKUHvPurlBhfbabas_3rX2dPn12l6yreo7DyulWfwa3mlRzfPLR2",
+            "content": "2024年3月5日- AI技术趋势科普推广数字科技产品体验分享中小企业商业赚钱教练，相关视频：AI时代加速到来，人类是否会被人工智能取代？年轻人又该如何把握机会？..."
+          },
+          {
+            "title": "ai未来十大趋势-今日头条",
+            "url": "https://www.sogou.com/link?url=hedJjaC291PD0T3DYzJqFDoBhFbePHve3pbAgkwwypmwa1XsoEKbq7EVWRLVI4uGReT7dhssFhU.",
+            "content": "2025年2月27日- 您在查找ai未来十大趋势吗？今日头条提供详尽的搜索结果聚合，每天实时更新。我们致力于连接人与信息，让优质丰富的信息得到高效精准的分发，促使..."
+          },
+          {
+            "title": "人工智能（AI）的未来发展趋势预测|ai|人工智能|人机交互|算法_手机网...",
+            "url": "https://www.sogou.com/link?url=58p16RfDRLtoClx6MbCzDGBlfPkGQZmgyUy65L_xlpxB1FaMn0zpGWDgPXlhvUuVri2jTBr9OJ8.",
+            "content": "2024年9月12日- 本文将深入探讨AI的未来发展趋势，从技术创新、应用场景拓展、伦理规范建立及人机交互新境界四个方面，描绘出AI技术的宏伟图景。 打开网易新闻 查看..."
+          }
+        ],
+        "pages_count": 8,
+        "suggestions": [],
+        "infoboxes": []
+      },
+      "status": "completed",
+      "analysis": {
+        "execution_duration": 2.243894,
+        "result_type": "structured_data",
+        "success_score": 1.0
+      }
+    }
+  ],
+  "metadata": {
+    "generated_at": "2025-06-09T15:06:36.313320",
+    "report_version": "1.0"
+  }
+}

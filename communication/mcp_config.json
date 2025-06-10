@@ -1,0 +1,14 @@
+{
+    "marix": {
+        "url": "http://localhost:8001/mcp/",
+        "transport": "streamable_http"
+    },
+    "fetch": {
+        "command": "python",
+        "args": [
+            "-m",
+            "mcp_server_fetch"
+        ],
+        "transport": "stdio"
+    }
+}
